@@ -30,6 +30,22 @@ bun add @abstractdata/starlight-theme
 
 (Or `npm install`, `pnpm add` — pick your flavor.)
 
+### 1a. (Optional but recommended) Mirror the abstract-data-setup workflow into your AI assistant
+
+```bash
+bunx abstract-data-install-skills
+```
+
+This bin command ships with the theme. It detects which AI tool markers you already have (`.claude/`, `.cursor/`, `.github/`) and asks before overwriting. Installs the `abstract-data-setup` workflow into:
+
+- `.claude/skills/abstract-data-setup/SKILL.md` (Claude Code)
+- `.cursor/rules/abstract-data-setup.mdc` (Cursor)
+- `.github/copilot-instructions.md` (GitHub Copilot — static reference, since Copilot can't run interactive prompts natively)
+
+After that, open your AI assistant in the project and say "set up docs" — the workflow walks through Python autodoc setup, docstring coverage audit, and config wiring.
+
+Skip this step if you don't use AI assistants — the theme works without.
+
 ### 2. Register the plugin
 
 In your `astro.config.mjs`:

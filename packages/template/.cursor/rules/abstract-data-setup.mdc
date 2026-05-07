@@ -1,5 +1,5 @@
 ---
-description: "Set up an Abstract Data documentation site for a Python project. Detect source code, audit docstring coverage, sniff docstring style (Google/NumPy/Sphinx), ask configuration questions (modules, motion, credit, version), wire up config files (scripts/python-autodoc.json, astro.config.mjs sidebar + plugin options, package.json scripts), and optionally install a docstring-coverage pre-commit hook in the source project. Use when the user says \"set up docs\", \"configure docs\", \"wire up Python autodoc\", \"scan my project for docs\", \"set up Abstract Data docs\", \"add API reference\", \"audit docstrings\", or similar phrases inside a docs project that uses @abstractdata/starlight-theme."
+description: "Set up the Abstract Data Documentation Theme (built on Astro Starlight) for a Python project. Detect source code, audit docstring coverage, sniff docstring style (Google/NumPy/Sphinx), ask configuration questions (modules, motion, credit, version), wire up config files (scripts/python-autodoc.json, astro.config.mjs sidebar + plugin options, package.json scripts), and optionally install a docstring-coverage pre-commit hook in the source project. Use when the user says \"set up docs\", \"configure docs\", \"wire up Python autodoc\", \"scan my project for docs\", \"set up Abstract Data docs\", \"add API reference\", \"audit docstrings\", or similar phrases inside a docs project that uses @abstractdata/starlight-theme (the npm package name; product is the Abstract Data Documentation Theme)."
 alwaysApply: false
 ---
 
@@ -9,9 +9,9 @@ alwaysApply: false
   Do not hand-edit this file — changes will be overwritten.
 -->
 
-# Abstract Data — Set Up Docs
+# Abstract Data Documentation Theme — Setup
 
-Bootstrap documentation for a project using `@abstractdata/starlight-theme`. Round 1.5 covers Python projects with docstring-coverage and style awareness. Future rounds will add TypeScript, Next.js, TanStack, OpenAPI.
+Bootstrap the Abstract Data Documentation Theme — the branded docs system Abstract Data uses across client projects, built on Astro Starlight and shipped as the npm package `@abstractdata/starlight-theme`. Round 1.5 covers Python projects with docstring-coverage and style awareness. Future rounds will add TypeScript, Next.js, TanStack, OpenAPI.
 
 ## When to invoke
 

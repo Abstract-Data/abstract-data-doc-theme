@@ -36,6 +36,14 @@ const TARGETS = [
     format: 'mirror',
   },
   {
+    label: 'Claude (theme pkg)',
+    dest: join(
+      REPO_ROOT,
+      'packages/starlight-theme/skills/claude/abstract-data-setup/SKILL.md',
+    ),
+    format: 'mirror',
+  },
+  {
     label: 'Cursor (monorepo)',
     dest: join(REPO_ROOT, '.cursor/rules/abstract-data-setup.mdc'),
     format: 'cursor',
@@ -49,6 +57,14 @@ const TARGETS = [
     format: 'cursor',
   },
   {
+    label: 'Cursor (theme pkg)',
+    dest: join(
+      REPO_ROOT,
+      'packages/starlight-theme/skills/cursor/abstract-data-setup.mdc',
+    ),
+    format: 'cursor',
+  },
+  {
     label: 'Copilot (monorepo)',
     dest: join(REPO_ROOT, '.github/copilot-instructions.md'),
     format: 'copilot',
@@ -58,6 +74,14 @@ const TARGETS = [
     dest: join(
       REPO_ROOT,
       'packages/template/.github/copilot-instructions.md',
+    ),
+    format: 'copilot',
+  },
+  {
+    label: 'Copilot (theme pkg)',
+    dest: join(
+      REPO_ROOT,
+      'packages/starlight-theme/skills/github/copilot-instructions.md',
     ),
     format: 'copilot',
   },
