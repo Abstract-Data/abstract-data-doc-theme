@@ -1,0 +1,229 @@
+/* ============================================================
+   @abstractdata/starlight-theme — theme.css
+   Always loaded. Brand palette, typography, signature decoration.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@500;600;700;800&display=swap');
+
+/* ------------------------------------------------------------
+   Palette tokens — overridden onto Starlight's CSS vars
+   ------------------------------------------------------------ */
+:root {
+  /* Brand atoms (always available regardless of theme) */
+  --ad-cyan: #00d9ff;
+  --ad-cyan-deep: #007a8e;
+  --ad-gold: #d4af37;
+  --ad-gold-deep: #8a6d1f;
+  --ad-burgundy: #8b2635;
+  --ad-burgundy-deep: #7a1f2c;
+  --ad-magenta: #ff00de;
+  --ad-charcoal: #0a0a0a;
+  --ad-surface-dark: #101116;
+  --ad-cream: #faf7f2;
+
+  /* Typography */
+  --sl-font: 'Inter', system-ui, -apple-system, sans-serif;
+  --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --ad-font-display: 'Orbitron', sans-serif;
+
+  /* Sizing tweaks */
+  --sl-content-width: 52rem;
+}
+
+/* ------------------------------------------------------------
+   Dark theme (HUD Dark / Calm Dark — same palette)
+   ------------------------------------------------------------ */
+:root[data-theme='dark'] {
+  --sl-color-accent-low: rgba(0, 217, 255, 0.10);
+  --sl-color-accent: var(--ad-cyan);
+  --sl-color-accent-high: var(--ad-cyan);
+  --sl-color-text-accent: var(--ad-cyan);
+
+  --sl-color-bg: var(--ad-charcoal);
+  --sl-color-bg-nav: var(--ad-surface-dark);
+  --sl-color-bg-sidebar: var(--ad-surface-dark);
+  --sl-color-bg-inline-code: #14151a;
+  --sl-color-hairline: #2a2c34;
+  --sl-color-hairline-light: #25262d;
+  --sl-color-hairline-shade: #1a1b20;
+
+  --sl-color-text: #f0f0f5;
+  --sl-color-text-invert: var(--ad-charcoal);
+  --sl-color-gray-1: #ffffff;
+  --sl-color-gray-2: #d8d8df;
+  --sl-color-gray-3: #b8b8c0;
+  --sl-color-gray-4: #8a8a93;
+  --sl-color-gray-5: #5a5b62;
+  --sl-color-gray-6: #2a2c34;
+
+  --ad-text-dim: #8a8a93;
+  --ad-callout-cyan-bg: rgba(0, 217, 255, 0.06);
+  --ad-callout-gold-bg: rgba(212, 175, 55, 0.06);
+  --ad-callout-burgundy-bg: rgba(192, 74, 91, 0.08);
+}
+
+/* ------------------------------------------------------------
+   Light theme (cream / burgundy / deeper teal)
+   ------------------------------------------------------------ */
+:root[data-theme='light'] {
+  --sl-color-accent-low: rgba(0, 122, 142, 0.10);
+  --sl-color-accent: var(--ad-cyan-deep);
+  --sl-color-accent-high: var(--ad-cyan-deep);
+  --sl-color-text-accent: var(--ad-cyan-deep);
+
+  --sl-color-bg: var(--ad-cream);
+  --sl-color-bg-nav: #ffffff;
+  --sl-color-bg-sidebar: #ffffff;
+  --sl-color-bg-inline-code: #f4efe5;
+  --sl-color-hairline: #d8d0bf;
+  --sl-color-hairline-light: #e6dfd1;
+  --sl-color-hairline-shade: #ece5d5;
+
+  --sl-color-text: #18181c;
+  --sl-color-text-invert: #ffffff;
+  --sl-color-gray-1: #0a0a0a;
+  --sl-color-gray-2: #18181c;
+  --sl-color-gray-3: #2a2a30;
+  --sl-color-gray-4: #5e5e66;
+  --sl-color-gray-5: #8e8a7e;
+  --sl-color-gray-6: #d8d0bf;
+
+  --ad-text-dim: #5e5e66;
+  --ad-callout-cyan-bg: rgba(0, 122, 142, 0.06);
+  --ad-callout-gold-bg: rgba(138, 109, 31, 0.08);
+  --ad-callout-burgundy-bg: rgba(122, 31, 44, 0.06);
+}
+
+/* ------------------------------------------------------------
+   Display typography — Orbitron on hero + h1/h2 only
+   (h3+ stays in Inter for body readability)
+   ------------------------------------------------------------ */
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+header.header .site-title,
+.sidebar-pane .group-label,
+.content-panel h1[data-page-title] {
+  font-family: var(--ad-font-display);
+  letter-spacing: 0.01em;
+  font-weight: 700;
+}
+
+/* Site title in top nav */
+header.header .site-title {
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Sidebar group labels */
+.sidebar-pane .group-label,
+.sidebar-pane .group-label > span {
+  font-family: var(--ad-font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------
+   H1 signature: cyan→gold gradient bracket bar on the left
+   ------------------------------------------------------------ */
+.sl-markdown-content > h1:first-child,
+.content-panel h1[data-page-title] {
+  position: relative;
+  padding-left: 14px;
+}
+.sl-markdown-content > h1:first-child::before,
+.content-panel h1[data-page-title]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.3em;
+  bottom: 0.3em;
+  width: 3px;
+  background: linear-gradient(180deg, var(--ad-cyan), var(--ad-gold));
+}
+:root[data-theme='light'] .sl-markdown-content > h1:first-child::before,
+:root[data-theme='light'] .content-panel h1[data-page-title]::before {
+  background: linear-gradient(180deg, var(--ad-cyan-deep), var(--ad-burgundy));
+}
+
+/* ------------------------------------------------------------
+   Inline code — gold on dark, burgundy on light
+   ------------------------------------------------------------ */
+.sl-markdown-content :not(pre) > code {
+  color: var(--ad-gold);
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.9em;
+}
+:root[data-theme='light'] .sl-markdown-content :not(pre) > code {
+  color: var(--ad-burgundy-deep);
+}
+
+/* ------------------------------------------------------------
+   Callouts (asides) — branded variants
+   ------------------------------------------------------------ */
+.starlight-aside {
+  border-left-width: 3px;
+  border-radius: 8px;
+  background: var(--ad-callout-cyan-bg);
+}
+.starlight-aside--tip { border-color: var(--ad-cyan); background: var(--ad-callout-cyan-bg); }
+.starlight-aside--note { border-color: var(--ad-cyan); background: var(--ad-callout-cyan-bg); }
+.starlight-aside--caution { border-color: var(--ad-gold); background: var(--ad-callout-gold-bg); }
+.starlight-aside--danger { border-color: var(--ad-burgundy); background: var(--ad-callout-burgundy-bg); }
+:root[data-theme='light'] .starlight-aside--tip,
+:root[data-theme='light'] .starlight-aside--note { border-color: var(--ad-cyan-deep); }
+:root[data-theme='light'] .starlight-aside--caution { border-color: var(--ad-gold-deep); }
+:root[data-theme='light'] .starlight-aside--danger { border-color: var(--ad-burgundy-deep); }
+
+.starlight-aside__title {
+  font-family: var(--ad-font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------
+   Code blocks — bracket dot indicator + cyan border accent
+   ------------------------------------------------------------ */
+.expressive-code .frame.is-terminal,
+.expressive-code .frame.has-title {
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.expressive-code .frame .header {
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--sl-color-hairline);
+}
+
+/* ------------------------------------------------------------
+   Sidebar — active item with cyan border + faint fill
+   ------------------------------------------------------------ */
+.sidebar-pane a[aria-current='page'] {
+  color: var(--ad-cyan);
+  border-left: 2px solid var(--ad-cyan);
+  background: var(--sl-color-accent-low);
+  font-weight: 500;
+}
+:root[data-theme='light'] .sidebar-pane a[aria-current='page'] {
+  color: var(--ad-cyan-deep);
+  border-left-color: var(--ad-cyan-deep);
+}
+
+/* ------------------------------------------------------------
+   Search box — bracket frame motif
+   ------------------------------------------------------------ */
+site-search button[data-open-modal] {
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 6px;
+  font-family: var(--sl-font-mono);
+}
+site-search button[data-open-modal] kbd {
+  font-family: var(--sl-font-mono);
+  font-size: 0.65rem;
+}
