@@ -1,0 +1,279 @@
+---
+title: Kitchen Sink
+description: Every component, callout, code language, and styling primitive the theme ships, in one page. Doubles as visual regression bait.
+---
+
+import { Card, CardGrid, LinkCard, Tabs, TabItem, Steps, Aside } from '@astrojs/starlight/components';
+import Glitch from '@abstractdata/starlight-theme/components/Glitch.astro';
+
+Every component, callout, code language, and styling primitive the theme ships — visible at once. Use this page to spot regressions after any visual change.
+
+## Headings
+
+# H1 — auto-rendered by Starlight (with bracket bar)
+
+## H2 — Orbitron, with bracket-bar adjacent
+
+### H3 — Inter, semibold, no bracket bar
+
+#### H4 — Inter, smaller
+
+##### H5
+
+###### H6
+
+## Body copy
+
+This is a paragraph with **bold text**, *italic text*, ~~strikethrough~~, and `inline code` styling. Inline code should appear in `gold` on dark surfaces and `burgundy-deep` on light. Links like [this one](/quickstart/) should be cyan with a dashed underline that becomes solid on hover.
+
+A second paragraph for line-height verification. The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump. The five boxing wizards jump quickly.
+
+## Lists
+
+Unordered:
+
+- First item with a [link inside](/quickstart/)
+- Second item with `inline code`
+- Nested:
+  - Sub-item one
+  - Sub-item two with **bold** emphasis
+
+Ordered:
+
+1. First step
+2. Second step with a sentence that wraps to confirm leading and indentation behave when items are multi-line and naturally extend across the column.
+3. Third step
+
+## Glitch component
+
+The signature `<Glitch />` component, in inline and block variants:
+
+- Inline: This <Glitch text="404" /> error tells you the page is gone.
+- Inline larger phrase: <Glitch text="ABSTRACT DATA" />
+
+Block (centered, full-width):
+
+<Glitch text="DOCUMENTATION, ENGINEERED" block />
+
+## Callouts (asides)
+
+:::note
+A neutral note — useful background information that supports but isn't critical to the surrounding content.
+:::
+
+:::tip
+A tip — friendly guidance, optional but recommended.
+:::
+
+:::caution
+A caution — heads-up about a non-fatal issue or footgun.
+:::
+
+:::danger
+A danger — destructive operations, security implications, or data loss risks.
+:::
+
+## Code blocks
+
+### Bash / shell
+
+```bash
+# add the theme to a Starlight project
+bun add @abstractdata/starlight-theme
+
+# run the dev server
+bun dev
+
+# build for production
+bun run build
+```
+
+### TypeScript
+
+```ts
+import type { StarlightPlugin } from '@astrojs/starlight/types';
+
+export interface Config {
+  motion: 'full' | 'calm';
+  credit: 'auto' | 'hide';
+  version?: string;
+}
+
+export default function plugin(opts: Config = {} as Config): StarlightPlugin {
+  const motion = opts.motion ?? 'full';
+  return {
+    name: '@abstractdata/starlight-theme',
+    hooks: {
+      'config:setup'({ updateConfig, logger }) {
+        updateConfig({ /* ... */ });
+        logger.info(`motion: ${motion}`);
+      },
+    },
+  };
+}
+```
+
+### JavaScript / Astro config
+
+```js
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+import starlight from '@astrojs/starlight';
+import abstractData from '@abstractdata/starlight-theme';
+import { abstractDataThemes } from '@abstractdata/starlight-theme/shiki';
+
+export default defineConfig({
+  site: 'https://docs.example.com',
+  integrations: [
+    starlight({
+      title: 'Acme Docs',
+      expressiveCode: { themes: [...abstractDataThemes] },
+      plugins: [abstractData({ motion: 'full', version: 'v1.0.0' })],
+    }),
+  ],
+});
+```
+
+### Python (sanity check for non-JS languages)
+
+```py
+from dataclasses import dataclass
+from typing import Literal
+
+@dataclass(frozen=True)
+class ThemeConfig:
+    motion: Literal["full", "calm"] = "full"
+    credit: Literal["auto", "hide"] = "auto"
+    version: str | None = None
+
+def apply(config: ThemeConfig) -> None:
+    """Apply the Abstract Data theme config."""
+    print(f"motion={config.motion} credit={config.credit}")
+```
+
+### CSS
+
+```css
+:root {
+  --ad-cyan: #00d9ff;
+  --ad-gold: #d4af37;
+  --ad-burgundy: #8b2635;
+}
+
+.brand-headline {
+  font-family: 'Orbitron Variable', sans-serif;
+  color: var(--ad-cyan);
+  text-shadow: 0 0 14px rgba(0, 217, 255, 0.45);
+}
+```
+
+### JSON
+
+```json
+{
+  "name": "@abstractdata/starlight-theme",
+  "version": "0.3.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./shiki": "./src/shiki/index.ts"
+  }
+}
+```
+
+## Tables
+
+| Mode | Hex grid | Glow | Scanline | Glitch | Recommended for |
+|------|----------|------|----------|--------|-----------------|
+| HUD (default) | yes | yes | yes | yes | abstractdata.io, marketing-y docs |
+| Calm | no | no | no | no | client docs, internal wikis |
+
+## Tabs
+
+<Tabs>
+  <TabItem label="Bun" icon="seti:bun">
+  ```bash
+  bun add @abstractdata/starlight-theme
+  ```
+  </TabItem>
+  <TabItem label="npm" icon="seti:npm">
+  ```bash
+  npm install @abstractdata/starlight-theme
+  ```
+  </TabItem>
+  <TabItem label="pnpm">
+  ```bash
+  pnpm add @abstractdata/starlight-theme
+  ```
+  </TabItem>
+</Tabs>
+
+## Steps
+
+<Steps>
+
+1. Install the theme.
+
+   ```bash
+   bun add @abstractdata/starlight-theme
+   ```
+
+2. Register the plugin in `astro.config.mjs`.
+
+   ```js
+   import abstractData from '@abstractdata/starlight-theme';
+
+   starlight({ plugins: [abstractData()] });
+   ```
+
+3. Run the dev server and verify the brand renders.
+
+   ```bash
+   bun dev
+   ```
+
+</Steps>
+
+## Cards
+
+<CardGrid>
+  <Card title="HUD surface" icon="rocket">
+    Animated hex grid, holographic shimmer on code, version chip glitch, cyan glow on H1.
+  </Card>
+  <Card title="Calm surface" icon="moon">
+    Same palette and fonts, no animations. Recommended for prose-heavy client docs.
+  </Card>
+</CardGrid>
+
+<LinkCard
+  title="Quickstart"
+  description="Five-minute install and config walkthrough."
+  href="/quickstart/"
+/>
+
+<LinkCard
+  title="Migrating to this theme"
+  description="Already running Starlight? Drop the theme in without losing your existing setup."
+  href="/migrating/"
+/>
+
+## Blockquote
+
+> "Documentation, engineered."
+>
+> — Abstract Data
+
+## Horizontal rule
+
+Above the rule.
+
+---
+
+Below the rule.
+
+## Keyboard
+
+Press <kbd>⌘</kbd> + <kbd>K</kbd> to open the search modal. Press <kbd>Esc</kbd> to close.
+
+## End
+
+If everything above looks right, the theme is in good shape. If anything is off, open a screenshot diff against `docs/round-2-mockup.html` and tell me what's drifting.

@@ -1,0 +1,50 @@
+name: Deploy to Cloudflare Pages
+
+# Optional. Cloudflare Pages can also auto-deploy from a connected Git repo
+# (no workflow needed). Use this only if you want CI to control the deploy.
+#
+# Setup:
+#   1. Create a Cloudflare API token with "Cloudflare Pages — Edit" permission
+#      at dash.cloudflare.com/profile/api-tokens
+#   2. Add two GitHub secrets:
+#      - CLOUDFLARE_API_TOKEN
+#      - CLOUDFLARE_ACCOUNT_ID
+#   3. Set the project name below (line: projectName).
+#   4. Delete .github/workflows/deploy.yml if you're not using GitHub Pages.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build site
+        run: bun run build
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: your-project-name # ← change to your CF Pages project name
+          directory: dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

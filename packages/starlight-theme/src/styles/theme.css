@@ -3,7 +3,12 @@
    Always loaded. Brand palette, typography, signature decoration.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@500;600;700;800&display=swap');
+/* Self-hosted variable fonts via @fontsource-variable.
+   No Google Fonts CDN dependency = GDPR-friendly, offline-friendly, faster
+   first paint (the woff2 ships in your build output, not over a 3rd-party CDN). */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/orbitron';
+@import '@fontsource-variable/jetbrains-mono';
 
 /* ------------------------------------------------------------
    Palette tokens — overridden onto Starlight's CSS vars
@@ -21,10 +26,11 @@
   --ad-surface-dark: #101116;
   --ad-cream: #faf7f2;
 
-  /* Typography */
-  --sl-font: 'Inter', system-ui, -apple-system, sans-serif;
-  --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-  --ad-font-display: 'Orbitron', sans-serif;
+  /* Typography (variable family names from @fontsource-variable; static name
+     fallback in case a consumer re-pins to non-variable @fontsource) */
+  --sl-font: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+  --sl-font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --ad-font-display: 'Orbitron Variable', 'Orbitron', sans-serif;
 
   /* Sizing tweaks */
   --sl-content-width: 52rem;
