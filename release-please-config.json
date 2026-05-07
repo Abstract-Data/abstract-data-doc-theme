@@ -27,6 +27,11 @@
         { "type": "build", "section": "Build System", "hidden": true },
         { "type": "ci", "section": "Continuous Integration", "hidden": true }
       ]
+    },
+    "packages/create-docs": {
+      "package-name": "@abstractdata/create-docs",
+      "component": "create-docs",
+      "changelog-path": "CHANGELOG.md"
     }
   }
 }

@@ -21,7 +21,7 @@ jobs:
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       starlight_theme_released: ${{ steps.release.outputs['packages/starlight-theme--release_created'] }}
-      starlight_theme_tag: ${{ steps.release.outputs['packages/starlight-theme--tag_name'] }}
+      create_docs_released: ${{ steps.release.outputs['packages/create-docs--release_created'] }}
     steps:
       - name: Run release-please
         id: release
@@ -30,34 +30,45 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  publish-npm:
+  publish-starlight-theme:
     name: Publish @abstractdata/starlight-theme to npm
     needs: release-please
     if: ${{ needs.release-please.outputs.starlight_theme_released == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
-      - name: Setup Node (for npm publish + provenance)
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Typecheck
-        run: bun --filter @abstractdata/starlight-theme typecheck
-
-      - name: Publish to npm with provenance
+      - run: bun install --frozen-lockfile
+      - run: bun --filter @abstractdata/starlight-theme typecheck
+      - name: Publish
         working-directory: packages/starlight-theme
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-create-docs:
+    name: Publish @abstractdata/create-docs to npm
+    needs: release-please
+    if: ${{ needs.release-please.outputs.create_docs_released == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - run: bun install --frozen-lockfile
+      - name: Publish (prepack copies the template dir)
+        working-directory: packages/create-docs
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

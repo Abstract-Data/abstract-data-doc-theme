@@ -1,0 +1,9 @@
+# The template/ directory is auto-copied from packages/template/ before publish
+# (see the prepack script in package.json). It's not committed because it would
+# duplicate the source-of-truth in packages/template/ and drift over time.
+template/
+
+# Standard ignores
+node_modules/
+*.log
+.DS_Store

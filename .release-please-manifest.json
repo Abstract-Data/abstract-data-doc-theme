@@ -1,3 +1,4 @@
 {
-  "packages/starlight-theme": "0.2.0"
+  "packages/starlight-theme": "0.2.0",
+  "packages/create-docs": "0.1.0"
 }

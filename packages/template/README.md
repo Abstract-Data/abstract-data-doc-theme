@@ -4,6 +4,19 @@ Starter Starlight documentation site with the [`@abstractdata/starlight-theme`](
 
 ## Use this template
 
+**The fastest path** — use the `@abstractdata/create-docs` CLI:
+
+```bash
+bun create @abstractdata/docs my-docs
+cd my-docs
+bun install
+bun dev
+```
+
+The CLI copies this template into a fresh folder, swaps `workspace:*` for a real published version of the theme, sets your project name in `package.json` and `astro.config.mjs`, and runs `git init` so you have a clean history from step zero.
+
+**Alternative — clone manually:**
+
 Click **"Use this template"** on the GitHub repo (or fork it) to create a new repo from this code, then:
 
 ```bash
