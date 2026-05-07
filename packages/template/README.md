@@ -32,6 +32,24 @@ bun dev
 
 See [`src/content/docs/quickstart.md`](./src/content/docs/quickstart.md) — it walks through what to change in `astro.config.mjs`, where to drop your logo, and how to toggle motion / credit / version.
 
+### Auto-setup with your AI coding assistant
+
+This template ships the `abstract-data-setup` workflow in three formats so it works regardless of which AI assistant you use:
+
+| Tool | File | Fidelity |
+|---|---|---|
+| **Claude Code** | `.claude/skills/abstract-data-setup/SKILL.md` | full procedural workflow |
+| **Cursor** | `.cursor/rules/abstract-data-setup.mdc` | full procedural workflow |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | static reference (Copilot can't natively run interactive prompts) |
+
+Open your tool of choice in this folder and say **"set up docs"** (or "wire up Python autodoc", "configure docs", "audit docstrings", etc.). The workflow detects your source project, audits docstring coverage, sniffs docstring style, asks a few configuration questions, and writes the right files (`scripts/python-autodoc.json`, `astro.config.mjs` sidebar + plugin config, `package.json` scripts).
+
+If you only use one tool, delete the other adapter folders — they're independent files.
+
+The Claude Code SKILL.md is the source of truth; the Cursor and Copilot files are auto-generated from it. (Edit the SKILL.md and run `bun run sync-skills` if you're working in the monorepo.)
+
+Round 1 covers Python projects. TypeScript, Next.js, TanStack, OpenAPI, and other detectors are planned for follow-up rounds.
+
 ## Deploy to GitHub Pages
 
 The workflow at `.github/workflows/deploy.yml` is preconfigured. To enable:

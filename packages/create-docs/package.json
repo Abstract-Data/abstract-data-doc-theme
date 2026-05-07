@@ -1,6 +1,6 @@
 {
   "name": "@abstractdata/create-docs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scaffold a new branded documentation site using @abstractdata/starlight-theme. Run with `bun create @abstractdata/docs <name>`.",
   "type": "module",
   "bin": {
@@ -11,7 +11,7 @@
     "template/"
   ],
   "scripts": {
-    "prepack": "rm -rf ./template && cp -R ../template ./template && rm -rf ./template/node_modules ./template/dist ./template/.astro ./template/bun.lock",
+    "prepack": "node ../../scripts/compile-skill.mjs && rm -rf ./template && cp -R ../template ./template && rm -rf ./template/node_modules ./template/dist ./template/.astro ./template/bun.lock",
     "test": "node --test"
   },
   "keywords": [
