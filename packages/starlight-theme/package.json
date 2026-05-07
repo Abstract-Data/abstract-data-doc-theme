@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./types": "./src/types.d.ts",
+    "./shiki": "./src/shiki/index.ts",
     "./styles/*": "./src/styles/*",
     "./components/*": "./src/components/*",
     "./assets/*": "./src/assets/*"
