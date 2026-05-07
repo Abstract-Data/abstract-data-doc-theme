@@ -1,0 +1,22 @@
+{
+  "name": "@abstract-data/playground",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local Starlight playground that consumes @abstractdata/starlight-theme for dev + visual review.",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@abstractdata/starlight-theme": "workspace:*",
+    "@astrojs/starlight": "^0.34.0",
+    "astro": "^5.10.0",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abstract Data Starlight — Round 2 (HUD dialed up)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     PAGE CHROME
+     ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #08080a;
+    color: #d8d8df;
+    line-height: 1.55;
+  }
+  .page-head {
+    padding: 56px 32px 24px;
+    text-align: center;
+    border-bottom: 1px solid #1f2026;
+    background: radial-gradient(ellipse at top, rgba(0,217,255,0.05), transparent 60%);
+  }
+  .page-head h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: 0.04em;
+    margin: 0 0 8px;
+    color: #f4f4f7;
+    text-shadow: 0 0 20px rgba(0,217,255,0.3);
+  }
+  .page-head p { margin: 0; color: #8a8a93; font-size: 14px; }
+  .page-head .pill {
+    display: inline-block; margin-top: 14px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 5px 12px;
+    background: rgba(0, 217, 255, 0.10);
+    color: #00d9ff;
+    border: 1px solid rgba(0, 217, 255, 0.4);
+    border-radius: 999px;
+    box-shadow: 0 0 16px rgba(0,217,255,0.25);
+  }
+  .page-toc {
+    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+    padding: 16px 32px 0;
+  }
+  .page-toc a {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #8a8a93; text-decoration: none;
+    padding: 6px 12px; border: 1px solid #2a2b32; border-radius: 999px;
+    transition: all .15s ease;
+  }
+  .page-toc a:hover { color: #00d9ff; border-color: #00d9ff; box-shadow: 0 0 12px rgba(0,217,255,0.3); }
+  .surface-section { padding: 56px 32px; max-width: 1280px; margin: 0 auto; }
+  .surface-section.showcase { padding-bottom: 32px; }
+  .surface-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #00d9ff;
+    margin: 0 0 4px;
+  }
+  .surface-label.primary { color: #d4af37; }
+  .surface-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px; font-weight: 700;
+    color: #f4f4f7; margin: 0 0 6px;
+  }
+  .surface-blurb { color: #8a8a93; font-size: 14px; max-width: 720px; margin: 0 0 20px; }
+  .changes-row {
+    display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px;
+  }
+  .changes-row span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #b8b8c0;
+    padding: 4px 10px;
+    border: 1px solid #2a2b32;
+    border-radius: 4px;
+    background: #14151a;
+  }
+  .changes-row span::before {
+    content: '+ ';
+    color: #00d9ff;
+  }
+
+  /* ============================================================
+     PREVIEW FRAME
+     ============================================================ */
+  .preview-frame {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  .preview-frame.hero {
+    box-shadow: 0 40px 80px -20px rgba(0,0,0,0.7),
+                0 0 0 1px rgba(0, 217, 255, 0.18),
+                0 0 60px -10px rgba(0, 217, 255, 0.18);
+  }
+  .browser-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px;
+    background: #1a1b20;
+    border-bottom: 1px solid #25262d;
+  }
+  .browser-dots { display: flex; gap: 6px; }
+  .browser-dots span {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: #444; display: block;
+  }
+  .browser-dots span:nth-child(1) { background: #ff5f57; }
+  .browser-dots span:nth-child(2) { background: #febc2e; }
+  .browser-dots span:nth-child(3) { background: #28c840; }
+  .browser-url {
+    flex: 1; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: #6a6b73;
+    background: #0d0e12; padding: 5px 12px; border-radius: 6px;
+    border: 1px solid #25262d;
+  }
+
+  /* ============================================================
+     SHARED DOC SHELL (themed via CSS vars)
+     ============================================================ */
+  .doc-shell {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    grid-template-rows: 56px 1fr;
+    grid-template-areas: "topbar topbar" "sidebar content";
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 720px;
+    position: relative;
+  }
+  .doc-shell.tall { min-height: 1100px; }
+
+  /* Topbar */
+  .doc-topbar {
+    grid-area: topbar;
+    display: flex; align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    gap: 16px;
+    z-index: 3;
+    position: relative;
+  }
+  .doc-logo {
+    display: flex; align-items: center; gap: 12px;
+    width: 220px;
+  }
+  .doc-logo svg { width: 32px; height: 32px; flex: 0 0 32px; }
+  .doc-logo svg .background { fill: var(--logo-bg); }
+  .doc-logo svg .foreground { fill: var(--logo-fg); }
+  .doc-logo-text {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  .doc-search {
+    flex: 0 0 320px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+  .doc-search-icon {
+    width: 14px; height: 14px;
+    border: 1.5px solid currentColor; border-radius: 50%;
+    position: relative;
+  }
+  .doc-search-icon::after {
+    content: ''; position: absolute; bottom: -3px; right: -3px;
+    width: 5px; height: 1.5px; background: currentColor;
+    transform: rotate(45deg); transform-origin: left;
+  }
+  .doc-search kbd {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-dim);
+  }
+  .doc-topbar-icons {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .doc-icon-btn {
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    color: var(--text-dim);
+    border: 1px solid transparent; border-radius: 6px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 14px;
+  }
+  .doc-icon-btn:hover { color: var(--accent-cyan); border-color: var(--border); }
+  .doc-version {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    color: var(--accent-gold);
+    border: 1px solid var(--accent-gold);
+    border-radius: 4px;
+    cursor: default;
+    transition: all .2s;
+  }
+
+  /* Sidebar */
+  .doc-sidebar {
+    grid-area: sidebar;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    padding: 20px 0;
+    overflow-y: auto;
+    position: relative;
+    z-index: 2;
+  }
+  .doc-side-section { margin-bottom: 18px; }
+  .doc-side-h {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0 20px;
+    margin: 0 0 6px;
+  }
+  .doc-side-link {
+    display: block;
+    padding: 5px 20px;
+    font-size: 13px;
+    color: var(--text-dim);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: color .12s, border-color .12s, background .12s;
+  }
+  .doc-side-link:hover { color: var(--text); }
+  .doc-side-link.active {
+    color: var(--accent-cyan);
+    border-left-color: var(--accent-cyan);
+    background: var(--accent-cyan-fade);
+  }
+  .doc-side-sub {
+    padding: 4px 20px 4px 32px;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    display: block;
+  }
+  .doc-side-sub:hover { color: var(--text); }
+  .doc-side-sub.active { color: var(--accent-gold); }
+
+  /* Content */
+  .doc-content {
+    grid-area: content;
+    padding: 40px 56px;
+    max-width: 920px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1;
+  }
+  .doc-breadcrumb {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .doc-breadcrumb span { color: var(--accent-cyan); }
+  .doc-h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 0.01em;
+    color: var(--text);
+    margin: 0 0 8px;
+    position: relative;
+    padding-left: 14px;
+  }
+  .doc-h1::before {
+    content: '';
+    position: absolute; left: 0; top: 6px; bottom: 6px;
+    width: 3px;
+    background: linear-gradient(180deg, var(--accent-cyan), var(--accent-gold));
+  }
+  .doc-lede {
+    font-size: 17px;
+    color: var(--text-dim);
+    margin: 0 0 28px;
+    line-height: 1.5;
+  }
+  .doc-content h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--text);
+    margin: 36px 0 12px;
+    letter-spacing: 0.01em;
+  }
+  .doc-content h3 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+    margin: 24px 0 8px;
+  }
+  .doc-content p { margin: 0 0 14px; font-size: 15px; color: var(--text); }
+  .doc-content p code, .doc-content li code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    padding: 1px 6px;
+    background: var(--code-inline-bg);
+    color: var(--accent-gold);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .doc-content a {
+    color: var(--accent-cyan);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--accent-cyan-fade);
+  }
+  .doc-content a:hover { border-bottom-style: solid; }
+  .doc-content ul { padding-left: 20px; margin: 0 0 14px; }
+  .doc-content li { margin-bottom: 4px; font-size: 15px; }
+
+  /* Code block */
+  .doc-code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 16px 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .doc-code-bar {
+    display: flex; align-items: center;
+    padding: 8px 14px;
+    background: var(--code-bar);
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .doc-code-bar::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-cyan);
+    margin-right: 8px;
+    box-shadow: 0 0 6px var(--accent-cyan);
+  }
+  .doc-code-copy {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .doc-code pre {
+    margin: 0;
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    overflow-x: auto;
+    color: var(--text);
+  }
+  .tk-key { color: var(--syntax-keyword); }
+  .tk-str { color: var(--syntax-string); }
+  .tk-fn { color: var(--syntax-function); }
+  .tk-com { color: var(--syntax-comment); font-style: italic; }
+  .tk-var { color: var(--syntax-variable); }
+  .tk-num { color: var(--accent-burgundy); }
+
+  /* Callouts */
+  .doc-callout {
+    margin: 18px 0;
+    padding: 14px 18px;
+    border-radius: 8px;
+    border-left: 3px solid var(--callout-color);
+    background: var(--callout-bg);
+    position: relative;
+    font-size: 14px;
+  }
+  .doc-callout-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--callout-color);
+    margin-bottom: 4px;
+  }
+  .doc-callout p { margin: 0; font-size: 14px; }
+  .doc-callout.tip { --callout-color: var(--accent-cyan); --callout-bg: var(--callout-cyan-bg); }
+  .doc-callout.warn { --callout-color: var(--accent-gold); --callout-bg: var(--callout-gold-bg); }
+  .doc-callout.danger { --callout-color: var(--accent-burgundy); --callout-bg: var(--callout-burgundy-bg); }
+
+  /* Hero card (in-page landing block) */
+  .doc-hero {
+    margin: 0 0 32px;
+    padding: 32px 36px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--hero-bg);
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-hero img {
+    width: 96px; height: 96px;
+    object-fit: contain;
+    margin-bottom: 16px;
+    filter: var(--hero-logo-filter);
+  }
+  .doc-hero h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    margin: 0 0 8px;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  .doc-hero p {
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 520px;
+    margin: 0 0 20px;
+  }
+  .doc-hero-actions { display: flex; gap: 12px; }
+  .doc-btn {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .doc-btn.primary {
+    background: var(--accent-cyan);
+    color: var(--btn-primary-text);
+    border: 1px solid var(--accent-cyan);
+  }
+  .doc-btn.primary:hover {
+    box-shadow: 0 0 24px var(--accent-cyan);
+  }
+  .doc-btn.ghost {
+    background: transparent;
+    color: var(--accent-gold);
+    border: 1px solid var(--accent-gold);
+  }
+  .doc-btn.ghost:hover {
+    background: var(--accent-cyan-fade);
+  }
+
+  /* Footer of preview content */
+  .doc-footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .doc-footer a { color: var(--accent-cyan); text-decoration: none; }
+  .doc-footer .next { display: flex; align-items: center; gap: 6px; color: var(--accent-cyan); }
+
+  /* ============================================================
+     SURFACE: HUD DARK (THE SHOWCASE — DIALED UP)
+     ============================================================ */
+  .surface-hud-dark {
+    --bg: #0a0a0a;
+    --surface: #101116;
+    --border: #2a2c34;
+    --text: #f0f0f5;
+    --text-dim: #8a8a93;
+    --accent-cyan: #00d9ff;
+    --accent-cyan-fade: rgba(0, 217, 255, 0.16);
+    --accent-gold: #d4af37;
+    --accent-burgundy: #c04a5b;
+    --code-bg: #0c0d11;
+    --code-bar: #14151a;
+    --code-inline-bg: #14151a;
+    --callout-cyan-bg: rgba(0, 217, 255, 0.08);
+    --callout-gold-bg: rgba(212, 175, 55, 0.08);
+    --callout-burgundy-bg: rgba(192, 74, 91, 0.10);
+    --syntax-keyword: #00d9ff;
+    --syntax-string: #d4af37;
+    --syntax-function: #c0e0ff;
+    --syntax-comment: #5a5b62;
+    --syntax-variable: #f0f0f5;
+    --logo-bg: transparent;
+    --logo-fg: #00d9ff;
+    --hero-bg: linear-gradient(135deg, #0c0d11 0%, #14151a 100%);
+    --hero-logo-filter: drop-shadow(0 0 24px rgba(0, 217, 255, 0.5));
+    --btn-primary-text: #0a0a0a;
+  }
+  .surface-hud-dark .doc-content,
+  .surface-hud-dark .doc-sidebar { background-color: transparent; }
+  .surface-hud-dark .doc-content::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='87' viewBox='0 0 100 87'><path d='M25 0L50 14.43V43.3L25 57.74L0 43.3V14.43L25 0Z M75 0L100 14.43V43.3L75 57.74L50 43.3V14.43L75 0Z M50 43.3L75 57.74V86.6L50 101L25 86.6V57.74L50 43.3Z' fill='none' stroke='%2300d9ff' stroke-width='0.6' opacity='0.22'/></svg>");
+    background-size: 100px 87px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.7;
+    animation: hex-pulse 4s ease-in-out infinite;
+  }
+  .surface-hud-dark .doc-content > * { position: relative; z-index: 1; }
+  .surface-hud-dark .doc-h1 {
+    text-shadow: 0 0 18px rgba(0, 217, 255, 0.6),
+                 0 0 36px rgba(0, 217, 255, 0.25);
+  }
+  .surface-hud-dark .doc-h1::after {
+    content: '';
+    position: absolute;
+    left: 14px; right: 0; bottom: -8px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent-cyan), transparent);
+    opacity: 0.7;
+    box-shadow: 0 0 8px rgba(0, 217, 255, 0.5);
+  }
+  .surface-hud-dark .doc-side-link.active {
+    box-shadow: inset 0 0 16px rgba(0, 217, 255, 0.22);
+    text-shadow: 0 0 8px rgba(0, 217, 255, 0.5);
+  }
+  .surface-hud-dark .doc-version {
+    box-shadow: 0 0 14px rgba(212, 175, 55, 0.5);
+    animation: glitch-pulse 8s infinite;
+  }
+  .surface-hud-dark .doc-version:hover {
+    animation: glitch-text 0.4s steps(2);
+  }
+  /* Code block: holographic shimmer overlay (continuous) */
+  .surface-hud-dark .doc-code {
+    box-shadow: 0 0 28px rgba(0, 217, 255, 0.15),
+                0 0 0 1px rgba(0, 217, 255, 0.22);
+  }
+  .surface-hud-dark .doc-code::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg,
+      transparent 30%,
+      rgba(0, 217, 255, 0.08) 50%,
+      transparent 70%);
+    background-size: 200% 100%;
+    pointer-events: none;
+    animation: holographic-shift 6s linear infinite;
+    border-radius: 8px;
+  }
+  .surface-hud-dark .doc-callout.tip {
+    box-shadow: 0 0 18px rgba(0, 217, 255, 0.14);
+  }
+  .surface-hud-dark .doc-callout.warn {
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.14);
+  }
+  .surface-hud-dark .doc-callout.danger {
+    box-shadow: 0 0 18px rgba(192, 74, 91, 0.18);
+  }
+  /* Scanline */
+  .surface-hud-dark .scanline {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.7), transparent);
+    box-shadow: 0 0 10px rgba(0, 217, 255, 0.7);
+    pointer-events: none;
+    animation: hud-scan 4s linear infinite;
+    z-index: 2;
+  }
+  /* Floating particles in hero */
+  .surface-hud-dark .particles {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  }
+  .surface-hud-dark .particles span {
+    position: absolute;
+    width: 3px; height: 3px; border-radius: 50%;
+    background: #00d9ff;
+    box-shadow: 0 0 8px #00d9ff, 0 0 16px rgba(0, 217, 255, 0.5);
+    animation: particle-float 7s ease-in-out infinite;
+  }
+  .surface-hud-dark .particles span:nth-child(1) { left: 12%; top: 38%; animation-delay: 0s; }
+  .surface-hud-dark .particles span:nth-child(2) { left: 84%; top: 52%; animation-delay: 1.2s; }
+  .surface-hud-dark .particles span:nth-child(3) { left: 28%; top: 82%; animation-delay: 2.4s; }
+  .surface-hud-dark .particles span:nth-child(4) { left: 70%; top: 18%; animation-delay: 3.6s; background: #d4af37; box-shadow: 0 0 8px #d4af37; }
+  .surface-hud-dark .particles span:nth-child(5) { left: 50%; top: 70%; animation-delay: 4.8s; }
+  .surface-hud-dark .particles span:nth-child(6) { left: 92%; top: 88%; animation-delay: 5.6s; background: #d4af37; box-shadow: 0 0 8px #d4af37; }
+
+  /* Doc hero (in-page landing block) */
+  .surface-hud-dark .doc-hero {
+    box-shadow: 0 0 40px rgba(0, 217, 255, 0.10),
+                inset 0 0 60px rgba(0, 217, 255, 0.04);
+    border-color: rgba(0, 217, 255, 0.3);
+  }
+
+  /* ============================================================
+     SURFACE: HUD LIGHT
+     ============================================================ */
+  .surface-hud-light {
+    --bg: #faf7f2;
+    --surface: #ffffff;
+    --border: #d8d0bf;
+    --text: #18181c;
+    --text-dim: #5e5e66;
+    --accent-cyan: #007a8e;
+    --accent-cyan-fade: rgba(0, 122, 142, 0.14);
+    --accent-gold: #8a6d1f;
+    --accent-burgundy: #7a1f2c;
+    --code-bg: #f4efe5;
+    --code-bar: #ece5d5;
+    --code-inline-bg: #f4efe5;
+    --callout-cyan-bg: rgba(0, 122, 142, 0.08);
+    --callout-gold-bg: rgba(138, 109, 31, 0.10);
+    --callout-burgundy-bg: rgba(122, 31, 44, 0.07);
+    --syntax-keyword: #7a1f2c;
+    --syntax-string: #8a6d1f;
+    --syntax-function: #007a8e;
+    --syntax-comment: #8e8a7e;
+    --syntax-variable: #1a1a1a;
+    --logo-bg: transparent;
+    --logo-fg: #7a1f2c;
+    --hero-bg: linear-gradient(135deg, #ffffff 0%, #f4efe5 100%);
+    --hero-logo-filter: drop-shadow(0 4px 12px rgba(122, 31, 44, 0.20));
+    --btn-primary-text: #ffffff;
+  }
+  .surface-hud-light .doc-content::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='87' viewBox='0 0 100 87'><path d='M25 0L50 14.43V43.3L25 57.74L0 43.3V14.43L25 0Z M75 0L100 14.43V43.3L75 57.74L50 43.3V14.43L75 0Z M50 43.3L75 57.74V86.6L50 101L25 86.6V57.74L50 43.3Z' fill='none' stroke='%237a1f2c' stroke-width='0.5' opacity='0.12'/></svg>");
+    background-size: 100px 87px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .surface-hud-light .doc-content > * { position: relative; z-index: 1; }
+  .surface-hud-light .doc-h1::after {
+    content: '';
+    position: absolute;
+    left: 14px; right: 0; bottom: -8px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent-burgundy), transparent);
+    opacity: 0.5;
+  }
+  .surface-hud-light .doc-version { background: rgba(138, 109, 31, 0.08); }
+  .surface-hud-light .doc-code::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg,
+      transparent 30%,
+      rgba(122, 31, 44, 0.06) 50%,
+      transparent 70%);
+    background-size: 200% 100%;
+    pointer-events: none;
+    animation: holographic-shift 8s linear infinite;
+    border-radius: 8px;
+  }
+
+  /* ============================================================
+     SURFACE: CALM (motion: 'calm') — Blueprint dark, no animations
+     ============================================================ */
+  .surface-calm {
+    --bg: #0a0a0a;
+    --surface: #14151a;
+    --border: #25262d;
+    --text: #f0f0f5;
+    --text-dim: #8a8a93;
+    --accent-cyan: #00d9ff;
+    --accent-cyan-fade: rgba(0, 217, 255, 0.10);
+    --accent-gold: #d4af37;
+    --accent-burgundy: #c04a5b;
+    --code-bg: #0d0e12;
+    --code-bar: #14151a;
+    --code-inline-bg: #14151a;
+    --callout-cyan-bg: rgba(0, 217, 255, 0.06);
+    --callout-gold-bg: rgba(212, 175, 55, 0.06);
+    --callout-burgundy-bg: rgba(192, 74, 91, 0.08);
+    --syntax-keyword: #00d9ff;
+    --syntax-string: #d4af37;
+    --syntax-function: #c0e0ff;
+    --syntax-comment: #5a5b62;
+    --syntax-variable: #f0f0f5;
+    --logo-bg: transparent;
+    --logo-fg: #00d9ff;
+    --hero-bg: #14151a;
+    --hero-logo-filter: drop-shadow(0 0 12px rgba(0, 217, 255, 0.25));
+    --btn-primary-text: #0a0a0a;
+  }
+
+  /* ============================================================
+     KEYFRAMES
+     ============================================================ */
+  @keyframes hud-scan {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+  @keyframes hex-pulse {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 0.85; }
+  }
+  @keyframes holographic-shift {
+    0% { background-position: -100% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes particle-float {
+    0%, 100% { transform: translate(0, 0); opacity: 0.4; }
+    25% { transform: translate(8px, -14px); opacity: 1; }
+    50% { transform: translate(-4px, -22px); opacity: 0.8; }
+    75% { transform: translate(-12px, -10px); opacity: 0.6; }
+  }
+  @keyframes glitch-pulse {
+    0%, 95%, 100% { text-shadow: none; }
+    96% { text-shadow: -1px 0 #ff00de, 1px 0 #00d9ff; }
+    97% { text-shadow: 1px 0 #ff00de, -1px 0 #00d9ff; }
+    98% { text-shadow: -1px 0 #00d9ff, 1px 0 #ff00de; }
+    99% { text-shadow: none; }
+  }
+  @keyframes glitch-text {
+    0% { text-shadow: -2px 0 #ff00de, 2px 0 #00d9ff; transform: translate(0, 0); }
+    25% { text-shadow: 2px 0 #ff00de, -2px 0 #00d9ff; transform: translate(1px, -1px); }
+    50% { text-shadow: -2px 0 #00d9ff, 2px 0 #ff00de; transform: translate(-1px, 1px); }
+    75% { text-shadow: 2px 0 #00d9ff, -2px 0 #ff00de; transform: translate(1px, 1px); }
+    100% { text-shadow: none; transform: translate(0, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scanline,
+    .particles,
+    .surface-hud-dark .doc-content::before,
+    .surface-hud-dark .doc-version,
+    .surface-hud-dark .doc-code::before,
+    .surface-hud-light .doc-code::before {
+      animation: none !important;
+    }
+  }
+
+  /* ============================================================
+     COMPARISON
+     ============================================================ */
+  .compare {
+    margin: 56px auto;
+    max-width: 1280px;
+    padding: 0 32px;
+  }
+  .compare table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #14151a;
+    border: 1px solid #25262d;
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+  .compare th, .compare td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #25262d;
+    vertical-align: top;
+  }
+  .compare th {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #00d9ff;
+    background: #1a1b20;
+  }
+  .compare td:first-child { color: #d4af37; font-weight: 500; }
+  .compare tr:last-child td { border-bottom: none; }
+
+  .swatches {
+    display: flex; gap: 12px; flex-wrap: wrap; margin: 12px 0 0;
+  }
+  .swatch {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #b8b8c0;
+  }
+  .swatch i {
+    width: 18px; height: 18px; border-radius: 4px; display: block;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .page-foot {
+    margin-top: 48px;
+    padding: 32px;
+    text-align: center;
+    border-top: 1px solid #1f2026;
+    color: #5a5b62;
+    font-size: 12px;
+  }
+  .page-foot strong { color: #00d9ff; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <div class="pill">Round 02 · HUD dialed up</div>
+  <h1 style="margin-top:14px">ABSTRACT DATA · STARLIGHT THEME</h1>
+  <p>HUD Dark is the showcase · Calm mode is the toggle · Real logo wired in · Hover the version chip</p>
+  <nav class="page-toc">
+    <a href="#hud-dark">HUD · Dark (Default)</a>
+    <a href="#hud-light">HUD · Light</a>
+    <a href="#calm">Calm Mode</a>
+    <a href="#compare">What's new</a>
+  </nav>
+</header>
+
+<!-- Inline SVG mark, themable via parent CSS -->
+<svg style="display:none">
+  <symbol id="ad-mark" viewBox="0 0 180 180">
+    <rect class="background" width="180" height="180" rx="37" />
+    <g style="transform: scale(95%); transform-origin: center">
+      <path class="foreground" d="M101.141 53H136.632C151.023 53 162.689 64.6662 162.689 79.0573V112.904H148.112V79.0573C148.112 78.7105 148.098 78.3662 148.072 78.0251L112.581 112.898C112.701 112.902 112.821 112.904 112.941 112.904H148.112V126.672H112.941C98.5504 126.672 86.5638 114.891 86.5638 100.5V66.7434H101.141V100.5C101.141 101.15 101.191 101.792 101.289 102.422L137.56 66.7816C137.255 66.7563 136.945 66.7434 136.632 66.7434H101.141V53Z"/>
+      <path class="foreground" d="M65.2926 124.136L14 66.7372H34.6355L64.7495 100.436V66.7372H80.1365V118.47C80.1365 126.278 70.4953 129.958 65.2926 124.136Z"/>
+    </g>
+  </symbol>
+</svg>
+
+<!-- ================================================================
+     SURFACE 1 — HUD DARK · THE SHOWCASE
+================================================================ -->
+<section class="surface-section showcase" id="hud-dark">
+  <div class="surface-label primary">Surface 01 · Default</div>
+  <h2 class="surface-title">HUD · Dark</h2>
+  <p class="surface-blurb">The showcase. This is what ships out of the box. Brighter glows, holographic shimmer drifting across every code block, scanline drift, glitch-pulse on the version chip (hover it), floating particles in the hero card, real logo wired in.</p>
+  <div class="changes-row">
+    <span>Real logo (PNG hero / SVG mark)</span>
+    <span>Holographic shimmer on code</span>
+    <span>Glitch pulse on version chip</span>
+    <span>Floating particles</span>
+    <span>Brighter H1 + active-item glow</span>
+    <span>Faster scanline (4s)</span>
+  </div>
+  <div class="swatches">
+    <span class="swatch"><i style="background:#0a0a0a"></i>#0A0A0A</span>
+    <span class="swatch"><i style="background:#101116"></i>#101116</span>
+    <span class="swatch"><i style="background:#00d9ff"></i>#00D9FF</span>
+    <span class="swatch"><i style="background:#d4af37"></i>#D4AF37</span>
+    <span class="swatch"><i style="background:#c04a5b"></i>#C04A5B</span>
+    <span class="swatch"><i style="background:#ff00de"></i>#FF00DE glitch</span>
+  </div>
+
+  <div class="preview-frame hero">
+    <div class="browser-bar">
+      <div class="browser-dots"><span></span><span></span><span></span></div>
+      <div class="browser-url">docs.abstractdata.io / quickstart</div>
+    </div>
+    <div class="doc-shell tall surface-hud-dark">
+      <div class="doc-topbar">
+        <div class="doc-logo">
+          <svg><use href="#ad-mark"/></svg>
+          <div class="doc-logo-text">Abstract Data</div>
+        </div>
+        <div class="doc-search">
+          <span class="doc-search-icon"></span>
+          <span>Search documentation</span>
+          <kbd>⌘K</kbd>
+        </div>
+        <div class="doc-topbar-icons">
+          <span class="doc-version" title="Hover me — glitch effect">v1.4.2</span>
+          <span class="doc-icon-btn">◐</span>
+          <span class="doc-icon-btn">⌥</span>
+        </div>
+      </div>
+
+      <aside class="doc-sidebar">
+        <div class="doc-side-section">
+          <p class="doc-side-h">Get Started</p>
+          <a class="doc-side-link active" href="#">Quickstart</a>
+          <a class="doc-side-link" href="#">Installation</a>
+          <a class="doc-side-link" href="#">Configuration</a>
+        </div>
+        <div class="doc-side-section">
+          <p class="doc-side-h">Theming</p>
+          <a class="doc-side-link" href="#">Colors</a>
+          <a class="doc-side-link" href="#">Typography</a>
+          <a class="doc-side-link" href="#">Surfaces</a>
+          <a class="doc-side-link" href="#">Motion</a>
+        </div>
+        <div class="doc-side-section">
+          <p class="doc-side-h">Components</p>
+          <a class="doc-side-link" href="#">Hero</a>
+          <a class="doc-side-link" href="#">Callouts</a>
+          <a class="doc-side-link" href="#">Code blocks</a>
+          <a class="doc-side-link" href="#">Glitch text</a>
+        </div>
+        <div class="doc-side-section">
+          <p class="doc-side-h">Deploy</p>
+          <a class="doc-side-link" href="#">GitHub Pages</a>
+          <a class="doc-side-link" href="#">Vercel</a>
+          <a class="doc-side-link" href="#">Cloudflare</a>
+        </div>
+      </aside>
+
+      <main class="doc-content">
+        <div class="scanline"></div>
+
+        <!-- In-page landing hero block -->
+        <div class="doc-hero">
+          <div class="particles">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <img src="./abstract-data-logo.png" alt="Abstract Data">
+          <h2>Documentation, engineered.</h2>
+          <p>Production-grade Astro Starlight theme by Abstract Data. Drop in for any client project — premium polish, brand-locked surfaces, opinionated defaults.</p>
+          <div class="doc-hero-actions">
+            <a class="doc-btn primary" href="#">Get Started</a>
+            <a class="doc-btn ghost" href="#">View on GitHub</a>
+          </div>
+        </div>
+
+        <p class="doc-breadcrumb">Docs <span>›</span> Get Started <span>›</span> Quickstart</p>
+        <h1 class="doc-h1">Quickstart</h1>
+        <p class="doc-lede">Install the Abstract Data Starlight theme and have a branded documentation site running in under five minutes.</p>
+
+        <h2>Installation</h2>
+        <p>Add the theme to your Astro project as a Starlight plugin. The package ships fully configured — drop it in <code>astro.config.mjs</code> and the brand surfaces apply automatically.</p>
+
+        <div class="doc-code">
+          <div class="doc-code-bar">terminal<span class="doc-code-copy">copy</span></div>
+<pre><span class="tk-com"># add the theme</span>
+bun add <span class="tk-str">@abstractdata/starlight-theme</span></pre>
+        </div>
+
+        <p>Then register the plugin in your Starlight config:</p>
+
+        <div class="doc-code">
+          <div class="doc-code-bar">astro.config.mjs<span class="doc-code-copy">copy</span></div>
+<pre><span class="tk-key">import</span> { defineConfig } <span class="tk-key">from</span> <span class="tk-str">'astro/config'</span>;
+<span class="tk-key">import</span> starlight <span class="tk-key">from</span> <span class="tk-str">'@astrojs/starlight'</span>;
+<span class="tk-key">import</span> abstractData <span class="tk-key">from</span> <span class="tk-str">'@abstractdata/starlight-theme'</span>;
+
+<span class="tk-key">export default</span> <span class="tk-fn">defineConfig</span>({
+  integrations: [
+    <span class="tk-fn">starlight</span>({
+      title: <span class="tk-str">'Acme Docs'</span>,
+      plugins: [<span class="tk-fn">abstractData</span>({
+        motion: <span class="tk-str">'full'</span>,    <span class="tk-com">// 'full' | 'calm'</span>
+        credit: <span class="tk-str">'auto'</span>,    <span class="tk-com">// 'auto' | 'hide'</span>
+      })],
+    }),
+  ],
+});</pre>
+        </div>
+
+        <div class="doc-callout tip">
+          <p class="doc-callout-label">Tip</p>
+          <p>HUD mode respects <code>prefers-reduced-motion</code> and disables all animations automatically when the user's OS requests it. No extra config required.</p>
+        </div>
+
+        <h2>Verify the install</h2>
+        <p>Run the dev server and navigate to <code>localhost:4321</code>. You should see the HUD surface with your project's title in the top bar.</p>
+
+        <div class="doc-code">
+          <div class="doc-code-bar">terminal<span class="doc-code-copy">copy</span></div>
+<pre>bun dev</pre>
+        </div>
+
+        <div class="doc-callout warn">
+          <p class="doc-callout-label">Heads up</p>
+          <p>Set a custom <code>site</code> URL in <code>astro.config.mjs</code> before production builds, or your sitemap will point to <code>localhost</code>.</p>
+        </div>
+
+        <div class="doc-callout danger">
+          <p class="doc-callout-label">Danger</p>
+          <p>Don't commit your <code>.env</code> file. Use 1Password CLI or your secret manager.</p>
+        </div>
+
+        <h3>What's next</h3>
+        <ul>
+          <li>Configure your <a href="#">brand colors</a> (or accept the Abstract Data defaults).</li>
+          <li>Switch to <a href="#">Calm mode</a> for client projects that want less visual energy.</li>
+          <li>Wire up <a href="#">GitHub Pages deployment</a>.</li>
+        </ul>
+
+        <div class="doc-footer">
+          <a href="#">Edit this page on GitHub</a>
+          <span class="next">Next: Installation →</span>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SURFACE 2 — HUD LIGHT
+================================================================ -->
+<section class="surface-section" id="hud-light">
+  <div class="surface-label">Surface 02 · Toggle</div>
+  <h2 class="surface-title">HUD · Light</h2>
+  <p class="surface-blurb">Same dialed-up HUD treatment, light palette. Cream paper, burgundy headlines, gold inline highlights, deeper teal cyan. Holographic shimmer dialed down to a slow burgundy sweep so it doesn't fight the body copy.</p>
+
+  <div class="preview-frame">
+    <div class="browser-bar">
+      <div class="browser-dots"><span></span><span></span><span></span></div>
+      <div class="browser-url">docs.abstractdata.io / quickstart</div>
+    </div>
+    <div class="doc-shell surface-hud-light">
+      <div class="doc-topbar">
+        <div class="doc-logo">
+          <svg><use href="#ad-mark"/></svg>
+          <div class="doc-logo-text">Abstract Data</div>
+        </div>
+        <div class="doc-search">
+          <span class="doc-search-icon"></span>
+          <span>Search documentation</span>
+          <kbd>⌘K</kbd>
+        </div>
+        <div class="doc-topbar-icons">
+          <span class="doc-version">v1.4.2</span>
+          <span class="doc-icon-btn">◐</span>
+          <span class="doc-icon-btn">⌥</span>
+        </div>
+      </div>
+      <aside class="doc-sidebar">
+        <div class="doc-side-section">
+          <p class="doc-side-h">Get Started</p>
+          <a class="doc-side-link active" href="#">Quickstart</a>
+          <a class="doc-side-link" href="#">Installation</a>
+          <a class="doc-side-link" href="#">Configuration</a>
+        </div>
+        <div class="doc-side-section">
+          <p class="doc-side-h">Theming</p>
+          <a class="doc-side-link" href="#">Colors</a>
+          <a class="doc-side-link" href="#">Typography</a>
+          <a class="doc-side-link" href="#">Surfaces</a>
+        </div>
+        <div class="doc-side-section">
+          <p class="doc-side-h">Components</p>
+          <a class="doc-side-link" href="#">Hero</a>
+          <a class="doc-side-link" href="#">Callouts</a>
+        </div>
+      </aside>
+      <main class="doc-content">
+        <p class="doc-breadcrumb">Docs <span>›</span> Get Started <span>›</span> Quickstart</p>
+        <h1 class="doc-h1">Quickstart</h1>
+        <p class="doc-lede">Install the Abstract Data Starlight theme and have a branded documentation site running in under five minutes.</p>
+        <h2>Installation</h2>
+        <p>Add the theme to your Astro project as a Starlight plugin. The package ships fully configured.</p>
+        <div class="doc-code">
+          <div class="doc-code-bar">terminal<span class="doc-code-copy">copy</span></div>
+<pre><span class="tk-com"># add the theme</span>
+bun add <span class="tk-str">@abstractdata/starlight-theme</span></pre>
+        </div>
+        <div class="doc-callout tip">
+          <p class="doc-callout-label">Tip</p>
+          <p>HUD mode respects <code>prefers-reduced-motion</code>.</p>
+        </div>
+        <h2>Verify the install</h2>
+        <p>Run the dev server and navigate to <code>localhost:4321</code>.</p>
+        <div class="doc-callout warn">
+          <p class="doc-callout-label">Heads up</p>
+          <p>Set a custom <code>site</code> URL before production builds.</p>
+        </div>
+        <div class="doc-callout danger">
+          <p class="doc-callout-label">Danger</p>
+          <p>Don't commit your <code>.env</code> file.</p>
+        </div>
+        <div class="doc-footer">
+          <a href="#">Edit this page on GitHub</a>
+          <span class="next">Next: Installation →</span>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SURFACE 3 — CALM MODE
+================================================================ -->
+<section class="surface-section" id="calm">
+  <div class="surface-label">Surface 03 · Toggle</div>
+  <h2 class="surface-title">Calm Mode <span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:#8a8a93; font-weight:400;">(motion: 'calm')</span></h2>
+  <p class="surface-blurb">One-line config flag flips off the hex grid, scanline, particles, holographic shimmer, glitch, and most glow. Same palette, same fonts, same components — just calmer. Recommended for clients with long-form prose-heavy docs.</p>
+  <div class="changes-row">
+    <span>No hexagon grid</span>
+    <span>No scanline</span>
+    <span>No particles</span>
+    <span>No holographic shimmer</span>
+    <span>No glitch</span>
+    <span>Glow only on focus/hover</span>
+  </div>
+
+  <div class="preview-frame">
+    <div class="browser-bar">
+      <div class="browser-dots"><span></span><span></span><span></span></div>
+      <div class="browser-url">docs.acme.io / quickstart</div>
+    </div>
+    <div class="doc-shell surface-calm">
+      <div class="doc-topbar">
+        <div class="doc-logo">
+          <svg><use href="#ad-mark"/></svg>
+          <div class="doc-logo-text">Acme</div>
+        </div>
+        <div class="doc-search">
+          <span class="doc-search-icon"></span>
+          <span>Search documentation</span>
+          <kbd>⌘K</kbd>
+        </div>
+        <div class="doc-topbar-icons">
+          <span class="doc-version">v2.0.0</span>
+          <span class="doc-icon-btn">◐</span>
+          <span class="doc-icon-btn">⌥</span>
+        </div>
+      </div>
+      <aside class="doc-sidebar">
+        <div class="doc-side-section">
+          <p class="doc-side-h">Get Started</p>
+          <a class="doc-side-link active" href="#">Quickstart</a>
+          <a class="doc-side-link" href="#">Installation</a>
+          <a class="doc-side-link" href="#">Configuration</a>
+        </div>
+        <div class="doc-side-section">
+          <p class="doc-side-h">Theming</p>
+          <a class="doc-side-link" href="#">Colors</a>
+          <a class="doc-side-link" href="#">Typography</a>
+        </div>
+        <div class="doc-side-section">
+          <p class="doc-side-h">Components</p>
+          <a class="doc-side-link" href="#">Hero</a>
+          <a class="doc-side-link" href="#">Callouts</a>
+        </div>
+      </aside>
+      <main class="doc-content">
+        <p class="doc-breadcrumb">Docs <span>›</span> Get Started <span>›</span> Quickstart</p>
+        <h1 class="doc-h1">Quickstart</h1>
+        <p class="doc-lede">A calmer surface for client projects. Same brand DNA, no animations.</p>
+        <h2>Installation</h2>
+        <p>Same one-line install. The only change is the <code>motion</code> flag.</p>
+        <div class="doc-code">
+          <div class="doc-code-bar">astro.config.mjs<span class="doc-code-copy">copy</span></div>
+<pre><span class="tk-fn">abstractData</span>({ motion: <span class="tk-str">'calm'</span> })</pre>
+        </div>
+        <div class="doc-callout tip">
+          <p class="doc-callout-label">Tip</p>
+          <p>Calm is also what HUD becomes when <code>prefers-reduced-motion</code> is set. Two paths, one quiet result.</p>
+        </div>
+        <div class="doc-footer">
+          <a href="#">Edit this page on GitHub</a>
+          <span class="next">Next: Installation →</span>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     COMPARISON
+================================================================ -->
+<section class="compare" id="compare">
+  <div class="surface-label">What's new in round 02</div>
+  <h2 class="surface-title">HUD (default) vs Calm (toggle)</h2>
+  <p class="surface-blurb">Same theme. Same palette. Same components. The <code style="font-family:'JetBrains Mono',monospace;color:#d4af37">motion</code> flag picks the surface.</p>
+  <table>
+    <thead>
+      <tr><th>Element</th><th>HUD <span style="color:#d4af37">(default)</span></th><th>Calm <span style="color:#8a8a93">(toggle)</span></th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Background grid</td><td>Animated hexagon (4s pulse)</td><td>None</td></tr>
+      <tr><td>H1 heading</td><td>Bracket bar + cyan text glow + underline fade</td><td>Bracket bar only</td></tr>
+      <tr><td>Sidebar active item</td><td>Cyan border + inset glow + text-shadow</td><td>Cyan border + faint fill</td></tr>
+      <tr><td>Code blocks</td><td>Holographic shimmer drift + cyan halo</td><td>Border + indicator dot</td></tr>
+      <tr><td>Callouts</td><td>Tinted left border + matching color glow</td><td>Tinted left border only</td></tr>
+      <tr><td>Version chip</td><td>Gold glow + glitch-pulse + glitch-on-hover</td><td>Outlined gold, static</td></tr>
+      <tr><td>Hero card</td><td>Floating cyan/gold particles + cyan halo</td><td>Solid surface</td></tr>
+      <tr><td>Hero motion</td><td>Scanline drift (4s loop)</td><td>None</td></tr>
+      <tr><td>Logo treatment</td><td>SVG mark with glow + PNG hero with cyan drop-shadow</td><td>SVG mark, no glow</td></tr>
+      <tr><td>Reduced-motion</td><td>Auto-collapses to Calm</td><td>Already calm</td></tr>
+      <tr><td>Recommended for</td><td>abstractdata.io, landing pages, marketing-y docs</td><td>Long-form client docs, internal wikis</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<footer class="page-foot">
+  <p><strong>Hover the version chip in the showcase</strong> to trigger the glitch effect. Watch the code blocks for the holographic drift. Particles loop in the hero card.</p>
+  <p>Round 02 · single self-contained HTML · real logo wired in · ready for round-three feedback</p>
+</footer>
+
+</body>
+</html>
