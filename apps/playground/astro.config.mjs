@@ -38,12 +38,19 @@ export default defineConfig({
           items: [
             { label: 'Quickstart', slug: 'quickstart' },
             { label: 'Installation', slug: 'installation' },
+            { label: 'Migrating from vanilla Starlight', slug: 'migrating' },
           ],
         },
         {
           label: 'Theming',
           items: [
             { label: 'Surfaces', slug: 'theming/surfaces' },
+          ],
+        },
+        {
+          label: 'Reference',
+          items: [
+            { label: 'Kitchen Sink', slug: 'kitchen-sink' },
           ],
         },
       ],

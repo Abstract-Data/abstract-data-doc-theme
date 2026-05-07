@@ -37,6 +37,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.0.0",
+    "@fontsource-variable/jetbrains-mono": "^5.0.0",
+    "@fontsource-variable/orbitron": "^5.0.0"
+  },
   "peerDependencies": {
     "@astrojs/starlight": ">=0.32.0",
     "astro": ">=5.0.0"

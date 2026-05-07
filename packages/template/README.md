@@ -31,9 +31,9 @@ The workflow at `.github/workflows/deploy.yml` is preconfigured. To enable:
 
 The output is plain static HTML — drop `dist/` on any host:
 
-- **Vercel** — connect the repo, set build command to `bun run build`, output to `dist/`.
-- **Cloudflare Pages** — same.
-- **Netlify** — same.
+- **Vercel** — easiest: connect the repo at vercel.com → New Project. Vercel auto-detects Astro and deploys on every push. No workflow needed. If you want CI control, use `.github/workflows/deploy-vercel.yml` (delete the GitHub Pages workflow first).
+- **Cloudflare Pages** — easiest: connect at dash.cloudflare.com/?to=/:account/pages → Create Project. Same flow as Vercel. If you want CI control, use `.github/workflows/deploy-cloudflare.yml`.
+- **Netlify** — same auto-deploy pattern. Drop a `netlify.toml` if you need to override.
 
 ## Update the theme
 

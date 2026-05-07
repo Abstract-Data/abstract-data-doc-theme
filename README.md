@@ -63,7 +63,9 @@ The theme palette and motion vocabulary are extracted from the live abstractdata
 - **Magenta** `#FF00DE` — glitch overlay (HUD only, used sparingly)
 - Display: **Orbitron** · Body: **Inter** · Mono: **JetBrains Mono**
 
-See `mockup.html` (in the repo root) for the round-two visual reference this scaffold was built against.
+Fonts ship self-hosted (variable woff2 files via `@fontsource-variable/*`) — no Google Fonts CDN dependency, GDPR-friendly, faster first paint.
+
+See `docs/round-2-mockup.html` for the round-two visual reference this scaffold was built against.
 
 ## Releasing
 

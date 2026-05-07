@@ -44,9 +44,23 @@ Lockfile is `bun.lock` (text-based). Commit it.
 
 ## What's done / what's next
 
-- ✅ **Round 3a (current):** monorepo scaffold, theme package with core + HUD CSS, working playground.
-- ⏳ **Round 3b:** custom `<Glitch>` MDX component, custom Header with version chip, Footer with credit toggle, full callout variants, expressive-code Shiki theme.
-- ⏳ **Round 3c:** `packages/template/` GitHub-template companion, deployment workflows (Pages/Vercel/Cloudflare), publish setup.
+- ✅ **Round 3a:** monorepo scaffold, theme package with core + HUD CSS, working playground.
+- ✅ **Round 3b:** `<Glitch>` MDX component, `SocialIcons` override with version chip, `Footer` override with credit toggle, virtual config module via `addIntegration` + Vite plugin, release-please workflow.
+- ✅ **Round 3c:** branded Shiki/expressive-code themes (cyan/gold/burgundy), custom `<Hero>` component using Astro's `<Image>`, gold ghost button polish, light-mode hex visibility bumped, branded TOC right sidebar, `packages/template/` template package with GitHub Pages workflow.
+- ✅ **Round 3.5 (QA):** branded `404.astro` with Glitch headline, search modal styling (`site-search dialog` + `::backdrop`), expanded `prefers-reduced-motion` block, mobile/light/calm walkthrough confirmed.
+- ✅ **Round 4:** self-hosted variable fonts via `@fontsource-variable/*` (no Google Fonts CDN), Vercel + Cloudflare Pages workflow variants in template, kitchen-sink showcase page, migration guide for existing Starlight users, `mockup.html` archived to `docs/`.
+- ⏳ **Future:** `bun create @abstractdata/docs` CLI scaffolder (separate `create-abstractdata-docs` package).
+
+## Non-obvious gotchas — read before adding features
+
+These are mistakes round 3 stepped on so you don't have to:
+
+- **Set `expressiveCode.themes` in the user's `astro.config.mjs`, not via the plugin's `updateConfig`.** Starlight's expressive-code integration locks its config before plugin `config:setup` hooks run — passing `expressiveCode` from the plugin gets silently overridden. The plugin still ships the themes via `./shiki` export and tries to set them by default (`shiki: true`), but the reliable path is explicit user config + `shiki: false` to opt out of the plugin's attempt. Both the playground and template demonstrate this.
+- **Starlight's page title is `<h1 id="_top">` inside `.sl-container`, not `h1[data-page-title]`.** When hiding or styling the auto-rendered title (e.g., on the 404 page), use the right selector.
+- **Starlight's hero buttons use `.sl-link-button.primary` / `.sl-link-button.secondary`,** not `.action.primary`. Target those for hero-button styling.
+- **Starlight's search modal DOM is `<site-search> → <dialog> → <div.dialog-frame>`,** not a dialog with `aria-label="Search"`. Use `site-search dialog` as the root selector.
+- **Expressive-code requires hex colors (including hex+alpha like `#00d9ff2e`) in theme `colors` blocks** — `rgba()` is rejected with "Invalid color value, expected a hex color." CSS files outside the Shiki theme can use `rgba()` freely.
+- **The `<Image>` component must import the asset as ImageMetadata.** Use `import { Image } from 'astro:assets'` for the value and `import type { ImageMetadata } from 'astro'` for the type — they live in different modules.
 
 ## Commit messages — Conventional Commits
 
