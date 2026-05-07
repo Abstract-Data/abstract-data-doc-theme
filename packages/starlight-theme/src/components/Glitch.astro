@@ -1,0 +1,36 @@
+---
+/**
+ * <Glitch /> — inline glitch text.
+ *
+ * Two ways to use it (both work in MDX):
+ *
+ *   <Glitch text="ABSTRACT DATA" />
+ *   <Glitch>some content</Glitch>
+ *
+ * The styling lives in `hud.css` — the glitch only animates when the
+ * theme is loaded with `motion: 'full'`. Under `motion: 'calm'` the
+ * text renders cleanly with no animation.
+ */
+interface Props {
+  /** Text to render. If omitted, the default slot is used. */
+  text?: string;
+  /** Render as block element instead of inline. */
+  block?: boolean;
+}
+
+const { text, block = false } = Astro.props;
+const tag = block ? 'div' : 'span';
+const content = text ?? '';
+---
+
+{
+  block ? (
+    <div class="ad-glitch" data-text={content}>
+      {text ?? <slot />}
+    </div>
+  ) : (
+    <span class="ad-glitch" data-text={content}>
+      {text ?? <slot />}
+    </span>
+  )
+}

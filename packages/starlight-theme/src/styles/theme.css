@@ -128,12 +128,14 @@ header.header .site-title {
    H1 signature: cyan→gold gradient bracket bar on the left
    ------------------------------------------------------------ */
 .sl-markdown-content > h1:first-child,
-.content-panel h1[data-page-title] {
+.content-panel h1[data-page-title],
+.hero h1 {
   position: relative;
   padding-left: 14px;
 }
 .sl-markdown-content > h1:first-child::before,
-.content-panel h1[data-page-title]::before {
+.content-panel h1[data-page-title]::before,
+.hero h1::before {
   content: '';
   position: absolute;
   left: 0;
@@ -143,7 +145,8 @@ header.header .site-title {
   background: linear-gradient(180deg, var(--ad-cyan), var(--ad-gold));
 }
 :root[data-theme='light'] .sl-markdown-content > h1:first-child::before,
-:root[data-theme='light'] .content-panel h1[data-page-title]::before {
+:root[data-theme='light'] .content-panel h1[data-page-title]::before,
+:root[data-theme='light'] .hero h1::before {
   background: linear-gradient(180deg, var(--ad-cyan-deep), var(--ad-burgundy));
 }
 
@@ -226,4 +229,152 @@ site-search button[data-open-modal] {
 site-search button[data-open-modal] kbd {
   font-family: var(--sl-font-mono);
   font-size: 0.65rem;
+}
+
+/* ------------------------------------------------------------
+   Version chip — outlined gold pill in the header
+   (Static look. HUD layers on glitch in hud.css.)
+   ------------------------------------------------------------ */
+.ad-version-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  margin-left: 8px;
+  color: var(--ad-gold);
+  border: 1px solid var(--ad-gold);
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  user-select: none;
+  cursor: default;
+  position: relative;
+}
+:root[data-theme='light'] .ad-version-chip {
+  color: var(--ad-gold-deep);
+  border-color: var(--ad-gold-deep);
+  background: rgba(138, 109, 31, 0.08);
+}
+
+/* ------------------------------------------------------------
+   "Built by Abstract Data" credit
+   Hidden when the plugin is configured with `credit: 'hide'`.
+   ------------------------------------------------------------ */
+.ad-credit {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--sl-color-hairline-light);
+  font-family: var(--ad-font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-4);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.ad-credit a {
+  color: var(--ad-cyan);
+  text-decoration: none;
+  font-weight: 600;
+}
+.ad-credit a:hover { text-decoration: underline; }
+:root[data-theme='light'] .ad-credit a { color: var(--ad-cyan-deep); }
+
+/* ------------------------------------------------------------
+   <Glitch /> base — clean render under motion: 'calm'
+   HUD layers on the actual glitch animation in hud.css.
+   ------------------------------------------------------------ */
+.ad-glitch {
+  position: relative;
+  display: inline-block;
+  font-family: var(--ad-font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ad-cyan);
+}
+:root[data-theme='light'] .ad-glitch {
+  color: var(--ad-burgundy);
+}
+
+/* ------------------------------------------------------------
+   Splash page hero — constrain logo width on wide screens
+   ------------------------------------------------------------ */
+.hero .hero-html img,
+.hero img[alt][src] {
+  max-width: 360px;
+  width: 100%;
+  height: auto;
+}
+
+/* ------------------------------------------------------------
+   Hero action buttons — primary cyan, secondary gold ghost
+   (Starlight uses .sl-link-button.primary / .secondary inside .hero .actions)
+   ------------------------------------------------------------ */
+.hero .actions .sl-link-button.primary {
+  background: var(--ad-cyan);
+  color: var(--ad-charcoal);
+  border: 1px solid var(--ad-cyan);
+  font-family: var(--ad-font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hero .actions .sl-link-button.primary:hover {
+  box-shadow: 0 0 24px rgba(0, 217, 255, 0.5);
+}
+.hero .actions .sl-link-button.secondary,
+.hero .actions .sl-link-button.minimal {
+  background: transparent;
+  color: var(--ad-gold);
+  border: 1px solid var(--ad-gold);
+  font-family: var(--ad-font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hero .actions .sl-link-button.secondary:hover,
+.hero .actions .sl-link-button.minimal:hover {
+  background: rgba(212, 175, 55, 0.10);
+  color: var(--ad-gold);
+}
+:root[data-theme='light'] .hero .actions .sl-link-button.primary {
+  background: var(--ad-cyan-deep);
+  color: #ffffff;
+  border-color: var(--ad-cyan-deep);
+}
+:root[data-theme='light'] .hero .actions .sl-link-button.secondary,
+:root[data-theme='light'] .hero .actions .sl-link-button.minimal {
+  color: var(--ad-burgundy-deep);
+  border-color: var(--ad-burgundy-deep);
+}
+:root[data-theme='light'] .hero .actions .sl-link-button.secondary:hover,
+:root[data-theme='light'] .hero .actions .sl-link-button.minimal:hover {
+  background: rgba(122, 31, 44, 0.06);
+  color: var(--ad-burgundy-deep);
+}
+
+/* ------------------------------------------------------------
+   "On this page" right sidebar (TOC) — branded
+   ------------------------------------------------------------ */
+.right-sidebar h2,
+.right-sidebar-panel h2 {
+  font-family: var(--ad-font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+.right-sidebar a[aria-current='true'],
+starlight-toc a[aria-current='true'] {
+  color: var(--ad-cyan);
+  border-left: 2px solid var(--ad-cyan);
+  padding-left: 8px;
+  margin-left: -10px;
+}
+:root[data-theme='light'] .right-sidebar a[aria-current='true'],
+:root[data-theme='light'] starlight-toc a[aria-current='true'] {
+  color: var(--ad-cyan-deep);
+  border-left-color: var(--ad-cyan-deep);
 }

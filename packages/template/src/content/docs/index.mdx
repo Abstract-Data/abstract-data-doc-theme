@@ -1,0 +1,60 @@
+---
+title: Welcome
+description: Replace this with your project's elevator pitch.
+template: splash
+hero:
+  tagline: Branded documentation by Abstract Data. Replace this tagline with your own.
+  actions:
+    - text: Get Started
+      link: /quickstart/
+      icon: right-arrow
+      variant: primary
+    - text: GitHub
+      link: https://github.com/your-org/your-repo
+      icon: external
+      variant: secondary
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+{/*
+  This is your landing page. Edit `hero.tagline` above and the cards below.
+
+  To use the branded `<Hero />` with an optimized logo image, replace the
+  frontmatter `hero:` block with the snippet at the bottom of this file.
+*/}
+
+<CardGrid>
+  <Card title="Quickstart" icon="rocket">
+    Get up and running in minutes. [Read the quickstart →](/quickstart/)
+  </Card>
+  <Card title="Replace these cards" icon="pencil">
+    Edit `src/content/docs/index.mdx` to make this your own.
+  </Card>
+  <Card title="Sidebar" icon="list-format">
+    Configure the sidebar in `astro.config.mjs`.
+  </Card>
+  <Card title="Brand" icon="setting">
+    Toggle `motion: 'calm' | 'full'` and `credit: 'auto' | 'hide'` in the plugin config.
+  </Card>
+</CardGrid>
+
+{/*
+  ──────────────────────────────────────────────────────────────────────
+  Optional: branded <Hero /> with an optimized logo image.
+  Drop a logo in `src/assets/`, then replace the `hero:` frontmatter
+  above with `template: splash` only, and use this in the body:
+
+      import { Image } from 'astro:assets';
+      import logo from '../../assets/your-logo.png';
+      import Hero from '@abstractdata/starlight-theme/components/Hero.astro';
+
+      <Hero
+        title="Your title"
+        tagline="Your tagline"
+        image={logo}
+        primary={{ text: 'Get Started', href: '/quickstart/' }}
+        secondary={{ text: 'GitHub', href: 'https://github.com/your-org/your-repo' }}
+      />
+  ──────────────────────────────────────────────────────────────────────
+*/}

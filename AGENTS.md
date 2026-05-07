@@ -48,6 +48,18 @@ Lockfile is `bun.lock` (text-based). Commit it.
 - ⏳ **Round 3b:** custom `<Glitch>` MDX component, custom Header with version chip, Footer with credit toggle, full callout variants, expressive-code Shiki theme.
 - ⏳ **Round 3c:** `packages/template/` GitHub-template companion, deployment workflows (Pages/Vercel/Cloudflare), publish setup.
 
+## Commit messages — Conventional Commits
+
+Releases are automated via [release-please](https://github.com/googleapis/release-please). Commit messages MUST follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `feat: add Glitch MDX component` → minor bump
+- `fix: callout border color in light mode` → patch bump
+- `feat!: rename motion 'full' to 'hud'` (or `BREAKING CHANGE:` in body) → major bump
+- `docs:`, `chore:`, `refactor:`, `style:`, `test:`, `build:`, `ci:` → no version bump
+- Scope is optional but recommended: `feat(theme): ...`, `fix(plugin): ...`
+
+`release-please` opens a release PR on every push to `main`. Merging it tags the release and triggers the npm publish workflow.
+
 ## Loop closure
 
 Before claiming any task complete:
@@ -55,6 +67,7 @@ Before claiming any task complete:
 1. `bun --filter @abstract-data/playground build` succeeds.
 2. `bun --filter '*' typecheck` succeeds.
 3. The playground renders in both `motion: 'full'` and `motion: 'calm'` configs.
+4. Commits use Conventional Commits format (verified by reviewer).
 
 ## Compaction trigger
 

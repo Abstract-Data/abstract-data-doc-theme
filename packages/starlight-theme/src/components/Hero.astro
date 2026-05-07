@@ -1,0 +1,170 @@
+---
+/**
+ * <Hero /> — branded splash hero for the docs landing page.
+ *
+ * Uses Astro's <Image> component for the logo so it goes through the asset
+ * pipeline (lazy loading, optimized format, no perf warnings).
+ *
+ * Use it in `src/content/docs/index.mdx` like this:
+ *
+ *   import { Image } from 'astro:assets';
+ *   import logo from '../../assets/your-logo.png';
+ *   import Hero from '@abstractdata/starlight-theme/components/Hero.astro';
+ *
+ *   <Hero
+ *     title="Your title"
+ *     tagline="Your tagline"
+ *     image={logo}
+ *     primary={{ text: 'Get Started', href: '/quickstart/' }}
+ *     secondary={{ text: 'GitHub', href: 'https://github.com/...' }}
+ *   />
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Action {
+  text: string;
+  href: string;
+}
+
+interface Props {
+  title: string;
+  tagline?: string;
+  image: ImageMetadata;
+  alt?: string;
+  primary?: Action;
+  secondary?: Action;
+}
+
+const { title, tagline, image, alt = title, primary, secondary } = Astro.props;
+---
+
+<section class="ad-hero-section">
+  <div class="ad-hero-content">
+    <h1 class="ad-hero-title">{title}</h1>
+    {tagline && <p class="ad-hero-tagline">{tagline}</p>}
+    {(primary || secondary) && (
+      <div class="ad-hero-actions">
+        {primary && (
+          <a class="ad-hero-btn ad-hero-btn-primary" href={primary.href}>
+            {primary.text}
+          </a>
+        )}
+        {secondary && (
+          <a class="ad-hero-btn ad-hero-btn-secondary" href={secondary.href}>
+            {secondary.text}
+          </a>
+        )}
+      </div>
+    )}
+  </div>
+  <div class="ad-hero-image">
+    <Image
+      src={image}
+      alt={alt}
+      widths={[180, 360, 540, 720]}
+      sizes="(min-width: 1024px) 360px, 50vw"
+      loading="eager"
+      decoding="sync"
+    />
+  </div>
+</section>
+
+<style>
+  .ad-hero-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    padding: 2rem 0 3rem;
+  }
+  @media (min-width: 768px) {
+    .ad-hero-section {
+      grid-template-columns: 1fr auto;
+      gap: 3.5rem;
+    }
+  }
+  .ad-hero-content { min-width: 0; }
+  .ad-hero-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.05;
+    margin: 0 0 1rem;
+    color: var(--sl-color-text);
+    letter-spacing: 0.01em;
+    position: relative;
+    padding-left: 14px;
+  }
+  .ad-hero-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.2em;
+    bottom: 0.2em;
+    width: 3px;
+    background: linear-gradient(180deg, var(--ad-cyan), var(--ad-gold));
+  }
+  :global(:root[data-theme='light']) .ad-hero-title::before {
+    background: linear-gradient(180deg, var(--ad-cyan-deep), var(--ad-burgundy));
+  }
+  .ad-hero-tagline {
+    font-size: 1.05rem;
+    line-height: 1.55;
+    color: var(--sl-color-gray-3);
+    margin: 0 0 1.75rem;
+    max-width: 38ch;
+  }
+  .ad-hero-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .ad-hero-btn {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.7rem 1.25rem;
+    border-radius: 6px;
+    text-decoration: none;
+    border: 1px solid;
+    transition: box-shadow .15s, background .15s;
+  }
+  .ad-hero-btn-primary {
+    background: var(--ad-cyan);
+    color: var(--ad-charcoal);
+    border-color: var(--ad-cyan);
+  }
+  .ad-hero-btn-primary:hover {
+    box-shadow: 0 0 24px rgba(0, 217, 255, 0.5);
+  }
+  .ad-hero-btn-secondary {
+    background: transparent;
+    color: var(--ad-gold);
+    border-color: var(--ad-gold);
+  }
+  .ad-hero-btn-secondary:hover {
+    background: rgba(212, 175, 55, 0.10);
+  }
+  :global(:root[data-theme='light']) .ad-hero-btn-primary {
+    background: var(--ad-cyan-deep);
+    color: #ffffff;
+    border-color: var(--ad-cyan-deep);
+  }
+  :global(:root[data-theme='light']) .ad-hero-btn-secondary {
+    color: var(--ad-burgundy-deep);
+    border-color: var(--ad-burgundy-deep);
+  }
+  :global(:root[data-theme='light']) .ad-hero-btn-secondary:hover {
+    background: rgba(122, 31, 44, 0.06);
+  }
+  .ad-hero-image img {
+    max-width: 360px;
+    height: auto;
+    filter: drop-shadow(0 0 24px rgba(0, 217, 255, 0.35));
+  }
+  :global(:root[data-theme='light']) .ad-hero-image img {
+    filter: drop-shadow(0 4px 16px rgba(122, 31, 44, 0.20));
+  }
+</style>

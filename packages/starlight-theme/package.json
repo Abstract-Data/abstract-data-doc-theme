@@ -1,12 +1,14 @@
 {
   "name": "@abstractdata/starlight-theme",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Branded Astro Starlight theme by Abstract Data — HUD and Calm surfaces, light + dark, motion-aware.",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./types": "./src/types.d.ts",
+    "./shiki": "./src/shiki/index.ts",
     "./styles/*": "./src/styles/*",
     "./components/*": "./src/components/*",
     "./assets/*": "./src/assets/*"
@@ -24,14 +26,17 @@
     "documentation",
     "abstract-data"
   ],
-  "homepage": "https://github.com/abstract-data/abstract-data-doc-theme",
+  "homepage": "https://github.com/Abstract-Data/abstract-data-doc-theme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/abstract-data/abstract-data-doc-theme.git",
+    "url": "git+https://github.com/Abstract-Data/abstract-data-doc-theme.git",
     "directory": "packages/starlight-theme"
   },
   "license": "MIT",
   "author": "Abstract Data <dev@abstractdata.io>",
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "@astrojs/starlight": ">=0.32.0",
     "astro": ">=5.0.0"

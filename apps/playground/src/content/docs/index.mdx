@@ -6,17 +6,20 @@ hero:
   tagline: Production-grade Astro Starlight theme. Drop in for any client project — premium polish, brand-locked surfaces, opinionated defaults.
   image:
     file: ../../assets/abstract-data-logo.png
+    alt: Abstract Data
   actions:
     - text: Get Started
       link: /quickstart/
       icon: right-arrow
       variant: primary
     - text: View on GitHub
-      link: https://github.com/abstract-data/abstract-data-doc-theme
+      link: https://github.com/Abstract-Data/abstract-data-doc-theme
       icon: external
+      variant: secondary
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import Glitch from '@abstractdata/starlight-theme/components/Glitch.astro';
 
 <CardGrid>
   <Card title="HUD surface" icon="rocket">
@@ -32,3 +35,15 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
     Built and shipped with Bun. `bun add @abstractdata/starlight-theme`, register the plugin, ship.
   </Card>
 </CardGrid>
+
+## <Glitch text="WHAT'S INSIDE" />
+
+The theme ships a small set of branded components. Use them in any MDX page.
+
+```mdx
+import Glitch from '@abstractdata/starlight-theme/components/Glitch.astro';
+
+# <Glitch text="404" /> Not Found
+```
+
+Hover the version chip in the top-right corner to trigger the same glitch effect on demand.

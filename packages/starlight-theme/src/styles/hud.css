@@ -24,8 +24,9 @@
   animation: ad-hex-pulse 5s ease-in-out infinite;
 }
 :root[data-theme='light'] .main-frame .main-pane::before {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='87' viewBox='0 0 100 87'><path d='M25 0L50 14.43V43.3L25 57.74L0 43.3V14.43L25 0Z M75 0L100 14.43V43.3L75 57.74L50 43.3V14.43L75 0Z M50 43.3L75 57.74V86.6L50 101L25 86.6V57.74L50 43.3Z' fill='none' stroke='%237a1f2c' stroke-width='0.5' opacity='0.10'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='87' viewBox='0 0 100 87'><path d='M25 0L50 14.43V43.3L25 57.74L0 43.3V14.43L25 0Z M75 0L100 14.43V43.3L75 57.74L50 43.3V14.43L75 0Z M50 43.3L75 57.74V86.6L50 101L25 86.6V57.74L50 43.3Z' fill='none' stroke='%237a1f2c' stroke-width='0.5' opacity='0.18'/></svg>");
   opacity: 1;
+  animation: none; /* hex pulse off in light — feels more refined */
 }
 
 .main-frame .main-pane > * {
@@ -34,15 +35,17 @@
 }
 
 /* ------------------------------------------------------------
-   H1 cyan glow + underline fade
+   H1 cyan glow + underline fade (covers content h1 and hero h1)
    ------------------------------------------------------------ */
 .sl-markdown-content > h1:first-child,
-.content-panel h1[data-page-title] {
+.content-panel h1[data-page-title],
+.hero h1 {
   text-shadow: 0 0 14px rgba(0, 217, 255, 0.45),
                0 0 28px rgba(0, 217, 255, 0.18);
 }
 .sl-markdown-content > h1:first-child::after,
-.content-panel h1[data-page-title]::after {
+.content-panel h1[data-page-title]::after,
+.hero h1::after {
   content: '';
   position: absolute;
   left: 14px;
@@ -54,11 +57,13 @@
   box-shadow: 0 0 8px rgba(0, 217, 255, 0.5);
 }
 :root[data-theme='light'] .sl-markdown-content > h1:first-child,
-:root[data-theme='light'] .content-panel h1[data-page-title] {
+:root[data-theme='light'] .content-panel h1[data-page-title],
+:root[data-theme='light'] .hero h1 {
   text-shadow: none;
 }
 :root[data-theme='light'] .sl-markdown-content > h1:first-child::after,
-:root[data-theme='light'] .content-panel h1[data-page-title]::after {
+:root[data-theme='light'] .content-panel h1[data-page-title]::after,
+:root[data-theme='light'] .hero h1::after {
   background: linear-gradient(90deg, var(--ad-burgundy), transparent);
   opacity: 0.45;
   box-shadow: none;
@@ -137,12 +142,85 @@
 }
 
 /* ------------------------------------------------------------
+   Version chip — gold glow + 9s glitch pulse + hover-trigger
+   ------------------------------------------------------------ */
+.ad-version-chip {
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+  animation: ad-version-glitch-pulse 9s infinite;
+}
+.ad-version-chip:hover {
+  animation: ad-glitch-text 0.4s steps(2);
+}
+:root[data-theme='light'] .ad-version-chip {
+  box-shadow: 0 0 10px rgba(138, 109, 31, 0.25);
+  animation: none; /* idle pulse off in light mode — feels more refined */
+}
+
+@keyframes ad-version-glitch-pulse {
+  0%, 95%, 100% { text-shadow: none; }
+  96% { text-shadow: -1px 0 var(--ad-magenta), 1px 0 var(--ad-cyan); }
+  97% { text-shadow: 1px 0 var(--ad-magenta), -1px 0 var(--ad-cyan); }
+  98% { text-shadow: -1px 0 var(--ad-cyan), 1px 0 var(--ad-magenta); }
+}
+
+/* ------------------------------------------------------------
+   <Glitch /> — RGB-channel split with clip-path animation
+   ------------------------------------------------------------ */
+.ad-glitch::before,
+.ad-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.ad-glitch::before {
+  color: var(--ad-magenta);
+  animation: ad-glitch-clip-a 3s steps(1) infinite;
+}
+.ad-glitch::after {
+  color: var(--ad-cyan);
+  animation: ad-glitch-clip-b 3s steps(1) infinite;
+}
+:root[data-theme='light'] .ad-glitch::before {
+  color: var(--ad-burgundy);
+}
+:root[data-theme='light'] .ad-glitch::after {
+  color: var(--ad-cyan-deep);
+}
+
+@keyframes ad-glitch-clip-a {
+  0%, 90%, 100% { transform: translate(0); clip-path: inset(100% 0 0 0); }
+  91% { transform: translate(-2px, 1px); clip-path: inset(20% 0 60% 0); }
+  93% { transform: translate(2px, -1px); clip-path: inset(60% 0 20% 0); }
+  95% { transform: translate(-1px, -1px); clip-path: inset(40% 0 40% 0); }
+  97% { transform: translate(1px, 0); clip-path: inset(10% 0 80% 0); }
+}
+@keyframes ad-glitch-clip-b {
+  0%, 90%, 100% { transform: translate(0); clip-path: inset(100% 0 0 0); }
+  91% { transform: translate(2px, -1px); clip-path: inset(60% 0 20% 0); }
+  93% { transform: translate(-2px, 1px); clip-path: inset(20% 0 60% 0); }
+  95% { transform: translate(1px, 1px); clip-path: inset(50% 0 30% 0); }
+  97% { transform: translate(-1px, 0); clip-path: inset(70% 0 10% 0); }
+}
+
+/* ------------------------------------------------------------
    prefers-reduced-motion: collapse to Calm behavior
    ------------------------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
   .main-frame .main-pane::before,
-  .expressive-code .frame::after {
+  .expressive-code .frame::after,
+  .ad-version-chip,
+  .ad-glitch::before,
+  .ad-glitch::after {
     animation: none !important;
+  }
+  .ad-glitch::before,
+  .ad-glitch::after {
+    display: none;
   }
   .sl-markdown-content > h1:first-child,
   .content-panel h1[data-page-title] {

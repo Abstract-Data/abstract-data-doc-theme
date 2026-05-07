@@ -65,6 +65,22 @@ The theme palette and motion vocabulary are extracted from the live abstractdata
 
 See `mockup.html` (in the repo root) for the round-two visual reference this scaffold was built against.
 
+## Releasing
+
+Releases are automated by [release-please](https://github.com/googleapis/release-please). Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `feat!:`, etc.) and merge to `main` — release-please will:
+
+1. Open a release PR with version bump + CHANGELOG entry.
+2. On merge, tag the release as `starlight-theme-v0.x.y`.
+3. Publish `@abstractdata/starlight-theme` to npm with provenance.
+
+### One-time GitHub setup
+
+To enable the workflow:
+
+1. **Allow Actions to create PRs.** Settings → Actions → General → "Workflow permissions" → check **"Allow GitHub Actions to create and approve pull requests"**.
+2. **Add an `NPM_TOKEN` secret.** Settings → Secrets and variables → Actions → New repository secret. Generate an npm automation token at npmjs.com → Account → Access Tokens → Granular Access Token (read+write to `@abstractdata` scope).
+3. **Claim the npm scope.** First publish must be a human one — `cd packages/starlight-theme && bun publish --access public` (or `npm publish --access public`) — to register `@abstractdata/starlight-theme`. After that, the workflow can publish on its own.
+
 ## Repo conventions
 
-See `AGENTS.md` for what agents should and should not touch in this repo.
+See `AGENTS.md` for what agents should and should not touch in this repo, including the Conventional Commits requirement.
