@@ -1,7 +1,7 @@
 {
   "name": "@abstractdata/starlight-theme",
   "version": "0.3.1",
-  "description": "Branded Astro Starlight theme by Abstract Data — HUD and Calm surfaces, light + dark, motion-aware.",
+  "description": "Abstract Data Documentation Theme — the branded docs system Abstract Data uses across client projects. Built on Astro Starlight. HUD and Calm surfaces, light + dark, motion-aware. Ships with the abstract-data-setup skill (Claude Code, Cursor, GitHub Copilot) for one-command project setup.",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -14,8 +14,13 @@
     "./assets/*": "./src/assets/*"
   },
   "files": [
-    "src/"
+    "src/",
+    "skills/",
+    "bin/"
   ],
+  "bin": {
+    "abstract-data-install-skills": "./bin/install-skills.js"
+  },
   "scripts": {
     "typecheck": "echo 'Standalone typecheck is intentionally a no-op — the theme integrates with Astro/Starlight virtual modules that only resolve in an Astro app context. Run typecheck via the playground app instead (bun --filter @abstract-data/playground typecheck).'"
   },
