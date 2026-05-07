@@ -227,3 +227,69 @@ site-search button[data-open-modal] kbd {
   font-family: var(--sl-font-mono);
   font-size: 0.65rem;
 }
+
+/* ------------------------------------------------------------
+   Version chip — outlined gold pill in the header
+   (Static look. HUD layers on glitch in hud.css.)
+   ------------------------------------------------------------ */
+.ad-version-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  margin-left: 8px;
+  color: var(--ad-gold);
+  border: 1px solid var(--ad-gold);
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  user-select: none;
+  cursor: default;
+  position: relative;
+}
+:root[data-theme='light'] .ad-version-chip {
+  color: var(--ad-gold-deep);
+  border-color: var(--ad-gold-deep);
+  background: rgba(138, 109, 31, 0.08);
+}
+
+/* ------------------------------------------------------------
+   "Built by Abstract Data" credit
+   Hidden when the plugin is configured with `credit: 'hide'`.
+   ------------------------------------------------------------ */
+.ad-credit {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--sl-color-hairline-light);
+  font-family: var(--ad-font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-4);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.ad-credit a {
+  color: var(--ad-cyan);
+  text-decoration: none;
+  font-weight: 600;
+}
+.ad-credit a:hover { text-decoration: underline; }
+:root[data-theme='light'] .ad-credit a { color: var(--ad-cyan-deep); }
+
+/* ------------------------------------------------------------
+   <Glitch /> base — clean render under motion: 'calm'
+   HUD layers on the actual glitch animation in hud.css.
+   ------------------------------------------------------------ */
+.ad-glitch {
+  position: relative;
+  display: inline-block;
+  font-family: var(--ad-font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ad-cyan);
+}
+:root[data-theme='light'] .ad-glitch {
+  color: var(--ad-burgundy);
+}

@@ -17,6 +17,7 @@ hero:
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import Glitch from '@abstractdata/starlight-theme/components/Glitch.astro';
 
 <CardGrid>
   <Card title="HUD surface" icon="rocket">
@@ -32,3 +33,15 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
     Built and shipped with Bun. `bun add @abstractdata/starlight-theme`, register the plugin, ship.
   </Card>
 </CardGrid>
+
+## <Glitch text="WHAT'S INSIDE" />
+
+The theme ships a small set of branded components. Use them in any MDX page.
+
+```mdx
+import Glitch from '@abstractdata/starlight-theme/components/Glitch.astro';
+
+# <Glitch text="404" /> Not Found
+```
+
+Hover the version chip in the top-right corner to trigger the same glitch effect on demand.

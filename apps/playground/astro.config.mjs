@@ -39,7 +39,8 @@ export default defineConfig({
       plugins: [
         abstractData({
           motion: 'full', // 'full' | 'calm'
-          credit: 'auto',
+          credit: 'auto', // 'auto' | 'hide'
+          version: 'v0.2.0', // shown as a chip in the header
         }),
       ],
     }),

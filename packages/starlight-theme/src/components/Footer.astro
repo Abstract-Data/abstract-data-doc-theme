@@ -1,0 +1,22 @@
+---
+/**
+ * Override of Starlight's <Footer /> slot.
+ * Renders the default footer (edit link, last updated, pagination),
+ * then appends a "Built by Abstract Data" credit unless the theme
+ * was configured with `credit: 'hide'` (white-label mode).
+ */
+import type { Props } from '@astrojs/starlight/props';
+import Default from '@astrojs/starlight/components/Footer.astro';
+import { config } from 'virtual:abstractdata/config';
+---
+
+<Default {...Astro.props} />
+
+{
+  config.credit !== 'hide' && (
+    <div class="ad-credit" role="contentinfo">
+      <span>Built by</span>
+      <a href="https://abstractdata.io" rel="noopener">Abstract Data</a>
+    </div>
+  )
+}

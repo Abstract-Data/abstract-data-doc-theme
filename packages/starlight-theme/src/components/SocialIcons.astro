@@ -1,0 +1,27 @@
+---
+/**
+ * Override of Starlight's <SocialIcons /> slot.
+ * Renders the default content, then appends the Abstract Data version chip
+ * if `version` is configured on the theme plugin.
+ *
+ * The chip carries the `ad-version-chip` class. When `motion: 'full'`,
+ * `hud.css` adds an idle glitch-pulse + a hover-triggered glitch.
+ */
+import type { Props } from '@astrojs/starlight/props';
+import Default from '@astrojs/starlight/components/SocialIcons.astro';
+import { config } from 'virtual:abstractdata/config';
+---
+
+<Default {...Astro.props} />
+
+{
+  config.version && (
+    <span
+      class="ad-version-chip"
+      data-text={config.version}
+      aria-label={`Version ${config.version}`}
+    >
+      {config.version}
+    </span>
+  )
+}
