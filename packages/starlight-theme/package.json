@@ -17,7 +17,7 @@
     "src/"
   ],
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "echo 'Standalone typecheck is intentionally a no-op — the theme integrates with Astro/Starlight virtual modules that only resolve in an Astro app context. Run typecheck via the playground app instead (bun --filter @abstract-data/playground typecheck).'"
   },
   "keywords": [
     "astro",
