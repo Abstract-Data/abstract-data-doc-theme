@@ -355,6 +355,95 @@ site-search button[data-open-modal] kbd {
 }
 
 /* ------------------------------------------------------------
+   Search modal — branded frame + pagefind UI
+   (Starlight DOM: <site-search> → <dialog> → <div.dialog-frame>)
+   ------------------------------------------------------------ */
+site-search dialog {
+  background: var(--sl-color-bg);
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 12px;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.55),
+              0 0 0 1px rgba(0, 217, 255, 0.04);
+  padding: 0;
+  color: var(--sl-color-text);
+  max-width: 720px;
+}
+site-search dialog::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+}
+:root[data-theme='light'] site-search dialog::backdrop {
+  background: rgba(60, 50, 40, 0.45);
+}
+site-search dialog .dialog-frame {
+  background: var(--sl-color-bg);
+  border-radius: 12px;
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+site-search dialog .dialog-frame > .header,
+site-search dialog .dialog-frame .header {
+  border-bottom: 1px solid var(--sl-color-hairline);
+  font-family: var(--ad-font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+site-search dialog .dialog-frame > p {
+  font-family: var(--sl-font);
+  color: var(--sl-color-gray-3);
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+.pagefind-ui {
+  --pagefind-ui-primary: var(--ad-cyan);
+  --pagefind-ui-text: var(--sl-color-text);
+  --pagefind-ui-background: var(--sl-color-bg);
+  --pagefind-ui-border: var(--sl-color-hairline);
+  --pagefind-ui-tag: var(--sl-color-bg-nav);
+  --pagefind-ui-font: var(--sl-font);
+}
+.pagefind-ui__form input.pagefind-ui__search-input {
+  background: var(--sl-color-bg-nav);
+  border: 1px solid var(--sl-color-hairline);
+  color: var(--sl-color-text);
+  font-family: var(--sl-font-mono);
+  border-radius: 6px;
+}
+.pagefind-ui__form input.pagefind-ui__search-input:focus {
+  border-color: var(--ad-cyan);
+  outline: none;
+}
+:root[data-theme='light'] .pagefind-ui__form input.pagefind-ui__search-input:focus {
+  border-color: var(--ad-cyan-deep);
+}
+.pagefind-ui__result-title,
+.pagefind-ui__result-title a {
+  font-family: var(--ad-font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  color: var(--sl-color-text);
+}
+.pagefind-ui__result-link:hover .pagefind-ui__result-title,
+.pagefind-ui__result-title a:hover {
+  color: var(--ad-cyan);
+}
+:root[data-theme='light'] .pagefind-ui__result-link:hover .pagefind-ui__result-title,
+:root[data-theme='light'] .pagefind-ui__result-title a:hover {
+  color: var(--ad-cyan-deep);
+}
+.pagefind-ui__result-excerpt mark {
+  background: rgba(212, 175, 55, 0.18);
+  color: var(--ad-gold);
+  padding: 0 3px;
+  border-radius: 3px;
+}
+:root[data-theme='light'] .pagefind-ui__result-excerpt mark {
+  background: rgba(138, 109, 31, 0.16);
+  color: var(--ad-gold-deep);
+}
+
+/* ------------------------------------------------------------
    "On this page" right sidebar (TOC) — branded
    ------------------------------------------------------------ */
 .right-sidebar h2,

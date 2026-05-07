@@ -1,0 +1,83 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import Glitch from '@abstractdata/starlight-theme/components/Glitch.astro';
+---
+
+<StarlightPage
+  frontmatter={{
+    title: '404 — Page not found',
+    template: 'splash',
+    description: 'The page you are looking for has drifted out of frame.',
+  }}
+>
+  <div class="ad-404">
+    <Glitch text="404" block />
+    <h2>Page not found.</h2>
+    <p>The page you're looking for has drifted out of frame. Or never existed.</p>
+    <a class="ad-404-back" href="/">← Back to home</a>
+  </div>
+</StarlightPage>
+
+<style is:global>
+  /* Hide Starlight's auto-rendered page title — the giant Glitch
+     '404' inside .ad-404 already serves that role; the title would
+     read as redundant noise above it.
+     Starlight renders the title as <h1 id="_top"> inside .sl-container. */
+  body:has(.ad-404) .sl-container > h1#_top,
+  body:has(.ad-404) h1#_top {
+    display: none;
+  }
+</style>
+
+<style>
+  .ad-404 {
+    text-align: center;
+    padding: 4rem 0;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+  .ad-404 :global(.ad-glitch) {
+    font-size: clamp(4rem, 14vw, 9rem);
+    display: block;
+    margin: 0 auto 1.5rem;
+    letter-spacing: 0.04em;
+  }
+  .ad-404 h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 0.04em;
+    margin: 0 0 1rem;
+    color: var(--sl-color-text);
+  }
+  .ad-404 p {
+    color: var(--sl-color-gray-3);
+    margin: 0 0 2rem;
+    font-size: 1rem;
+  }
+  .ad-404-back {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ad-cyan);
+    text-decoration: none;
+    border: 1px solid var(--ad-cyan);
+    padding: 0.7rem 1.4rem;
+    border-radius: 6px;
+    display: inline-block;
+    transition: box-shadow .15s, background .15s;
+  }
+  .ad-404-back:hover {
+    box-shadow: 0 0 18px rgba(0, 217, 255, 0.4);
+    background: rgba(0, 217, 255, 0.06);
+  }
+  :global(:root[data-theme='light']) .ad-404-back {
+    color: var(--ad-cyan-deep);
+    border-color: var(--ad-cyan-deep);
+  }
+  :global(:root[data-theme='light']) .ad-404-back:hover {
+    box-shadow: none;
+    background: rgba(0, 122, 142, 0.06);
+  }
+</style>
