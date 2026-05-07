@@ -1,0 +1,38 @@
+{
+  "name": "@abstractdata/create-docs",
+  "version": "0.2.0",
+  "description": "Scaffold a new branded documentation site using @abstractdata/starlight-theme. Run with `bun create @abstractdata/docs <name>`.",
+  "type": "module",
+  "bin": {
+    "create-abstractdata-docs": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "template/"
+  ],
+  "scripts": {
+    "prepack": "node ../../scripts/compile-skill.mjs && rm -rf ./template && cp -R ../template ./template && rm -rf ./template/node_modules ./template/dist ./template/.astro ./template/bun.lock",
+    "test": "node --test"
+  },
+  "keywords": [
+    "create",
+    "scaffold",
+    "starlight",
+    "abstract-data",
+    "documentation"
+  ],
+  "homepage": "https://github.com/Abstract-Data/abstract-data-doc-theme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Abstract-Data/abstract-data-doc-theme.git",
+    "directory": "packages/create-docs"
+  },
+  "license": "MIT",
+  "author": "Abstract Data <dev@abstractdata.io>",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

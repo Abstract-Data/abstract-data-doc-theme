@@ -1,6 +1,6 @@
 {
   "name": "@abstractdata/starlight-theme",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Branded Astro Starlight theme by Abstract Data — HUD and Calm surfaces, light + dark, motion-aware.",
   "type": "module",
   "main": "./src/index.ts",

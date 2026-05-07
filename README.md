@@ -5,8 +5,20 @@ Branded documentation theme by Abstract Data, built on [Astro Starlight](https:/
 This is a Bun-workspaces monorepo:
 
 - `packages/starlight-theme/` — the published `@abstractdata/starlight-theme` npm package.
+- `packages/create-docs/` — the published `@abstractdata/create-docs` CLI scaffolder. Powers `bun create @abstractdata/docs <name>`.
+- `packages/template/` — the source-of-truth template that the CLI scaffolds from. Also usable directly as a GitHub "Use this template" starting point.
 - `apps/playground/` — local Starlight site that consumes the package end-to-end (this is what `bun dev` runs).
-- `packages/template/` — _(coming in round 3c)_ the GitHub template clients clone for new projects.
+
+## For consumers — start a new project
+
+```bash
+bun create @abstractdata/docs my-docs
+cd my-docs
+bun install
+bun dev
+```
+
+That's it. See `packages/create-docs/README.md` for what the CLI does.
 
 ## Quickstart (local development)
 

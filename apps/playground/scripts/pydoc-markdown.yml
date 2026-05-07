@@ -1,0 +1,60 @@
+# pydoc-markdown configuration — Abstract Data Starlight recipe
+#
+# This config drives `pydoc-markdown` to extract docstrings from a Python
+# package and emit Starlight-compatible Markdown into
+# `src/content/docs/api/`.
+#
+# Run via: `bun run docs:python`  (which calls scripts/build-python-docs.mjs)
+#
+# Adapt:
+#   • `loaders[0].search_path` → where your Python source lives
+#   • `loaders[0].modules` → which modules to document
+#   • `renderer.filename` → output naming pattern
+# ----------------------------------------------------------------------
+
+loaders:
+  - type: python
+    # Pointed at the sibling `website-auditkit` project for a real-world
+    # smoke test. Relative to `apps/playground/`, both on John's Mac
+    # and inside the bash sandbox the path resolves the same way.
+    search_path:
+      - /sessions/zen-affectionate-johnson/mnt/website-auditkit/src
+    # Start with two small modules to verify the pipeline before
+    # turning loose on the full ~30-module package.
+    modules:
+      - auditkit.config
+      - auditkit.bootstrap
+
+processors:
+  # Skip dunders, undocumented private members.
+  - type: filter
+    expression: not name.startswith('_') or name in ['__init__', '__call__']
+    skip_empty_modules: true
+  # "Smart" defaults: signature formatting, type annotation rendering, etc.
+  - type: smart
+  # Cross-reference links inside the package.
+  - type: crossref
+
+renderer:
+  type: markdown
+  # Output goes to src/content/docs/api/<module>.md
+  # Starlight slug = "api/<module>" (after frontmatter post-processing)
+  filename: src/content/docs/api/{relative_path}.md
+  add_method_class_prefix: true
+  add_member_class_prefix: true
+  render_module_header: true
+  descriptive_class_title: false
+  descriptive_module_title: false
+  # Format choice — Markdown source-of-truth, no MkDocs-isms
+  source_format: markdown
+  use_fixed_header_levels: true
+  # H1 = page title (post-processor will lift this into frontmatter)
+  # H2 = classes + module-level groupings
+  # H3 = methods, functions
+  header_level_by_type:
+    Module: 1
+    Class: 2
+    Method: 3
+    Function: 3
+    Variable: 4
+    Data: 4

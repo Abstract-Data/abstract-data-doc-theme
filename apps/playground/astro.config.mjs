@@ -48,6 +48,16 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Recipes',
+          items: [
+            { label: 'Python autodoc', slug: 'recipes/python-autodoc' },
+          ],
+        },
+        {
+          label: 'API Reference',
+          autogenerate: { directory: 'api' },
+        },
+        {
           label: 'Reference',
           items: [
             { label: 'Kitchen Sink', slug: 'kitchen-sink' },

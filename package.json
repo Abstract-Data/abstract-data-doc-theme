@@ -12,7 +12,8 @@
     "dev": "bun --filter @abstract-data/playground dev",
     "build": "bun --filter @abstract-data/playground build",
     "preview": "bun --filter @abstract-data/playground preview",
-    "typecheck": "bun --filter '*' typecheck"
+    "typecheck": "bun --filter '*' typecheck",
+    "sync-skills": "node scripts/compile-skill.mjs"
   },
   "packageManager": "bun@1.1.34",
   "engines": {
