@@ -136,6 +136,23 @@ const MAPPINGS = [
     from: 'python-autodoc.json',
     to: 'scripts/python-autodoc.json',
   },
+  // TypeScript autodoc scripts — only offered when a TS library shape is detected
+  {
+    label: 'TypeScript autodoc orchestrator (build-ts-docs.mjs)',
+    detect: () => existsSync(resolve(PROJECT_ROOT, 'tsconfig.json')) &&
+                  existsSync(resolve(PROJECT_ROOT, 'package.json')),
+    fromBase: 'scripts',
+    from: 'build-ts-docs.mjs',
+    to: 'scripts/build-ts-docs.mjs',
+  },
+  {
+    label: 'TypeScript autodoc config (ts-autodoc.json)',
+    detect: () => existsSync(resolve(PROJECT_ROOT, 'tsconfig.json')) &&
+                  existsSync(resolve(PROJECT_ROOT, 'package.json')),
+    fromBase: 'scripts',
+    from: 'ts-autodoc.json',
+    to: 'scripts/ts-autodoc.json',
+  },
 ];
 
 // ─── Detection summary ─────────────────────────────────────────────

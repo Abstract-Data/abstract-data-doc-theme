@@ -222,6 +222,22 @@ const STATIC_MIRRORS = [
     src: join(REPO_ROOT, 'packages/template/scripts/python-autodoc.json'),
     dest: join(REPO_ROOT, 'packages/starlight-theme/scripts/python-autodoc.json'),
   },
+  // TypeScript autodoc — same shape as the Python pair
+  {
+    label: 'build-ts-docs.mjs (template)',
+    src: join(REPO_ROOT, 'apps/playground/scripts/build-ts-docs.mjs'),
+    dest: join(REPO_ROOT, 'packages/template/scripts/build-ts-docs.mjs'),
+  },
+  {
+    label: 'build-ts-docs.mjs (theme pkg)',
+    src: join(REPO_ROOT, 'apps/playground/scripts/build-ts-docs.mjs'),
+    dest: join(REPO_ROOT, 'packages/starlight-theme/scripts/build-ts-docs.mjs'),
+  },
+  {
+    label: 'ts-autodoc.json (theme pkg)',
+    src: join(REPO_ROOT, 'packages/template/scripts/ts-autodoc.json'),
+    dest: join(REPO_ROOT, 'packages/starlight-theme/scripts/ts-autodoc.json'),
+  },
 ];
 
 // Write all targets

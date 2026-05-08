@@ -98,6 +98,8 @@ const REQUIRED = [
   '.github/workflows/deploy.yml',
   'scripts/build-python-docs.mjs',
   'scripts/python-autodoc.json',
+  'scripts/build-ts-docs.mjs',
+  'scripts/ts-autodoc.json',
   'src/content/docs/index.mdx',
   'src/content/docs/quickstart.md',
 ];
