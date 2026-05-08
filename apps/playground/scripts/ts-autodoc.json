@@ -4,5 +4,7 @@
   "tsconfig": "../../packages/your-lib/tsconfig.json",
   "outputDir": "src/content/docs/api/ts",
   "githubPages": false,
-  "skipErrorChecking": true
+  "skipErrorChecking": true,
+  "repoUrl": "",
+  "repoBranch": "main"
 }

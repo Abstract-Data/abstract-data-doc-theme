@@ -105,7 +105,28 @@ Common shapes:
 - Multi-entry: `package.json` `exports` lists multiple → one entry per exported subpath
 - Monorepo: each package has its own entry
 
-Note: TypeDoc's docstring style is JSDoc/TSDoc — most TS projects use `/** ... */` comments. Quick coverage sniff is optional (TypeDoc still emits something for undocumented symbols).
+#### 5a — Audit TSDoc coverage
+
+Mirror Phase 4a for TypeScript. Run TypeDoc in **validation-only** mode against the chosen entry points:
+
+```bash
+bunx typedoc \
+  --plugin typedoc-plugin-markdown \
+  --validation.notDocumented \
+  --treatValidationWarningsAsErrors false \
+  --emit none \
+  <entryPoints>
+```
+
+Parse the resulting warnings — TypeDoc emits one line per undocumented symbol with `[warning]` prefix. Group by source file and report per-file coverage as a percentage of public exports that have at least one TSDoc block. Use the same color thresholds as the Python audit:
+
+- **≥ 80%** green
+- **50–79%** yellow
+- **< 50%** red
+
+If TypeDoc isn't installed yet, fall back to a quick AST sniff: count files in `src/` with `/**` blocks vs total exported declarations. Coarser, but no install required.
+
+Show the table; don't editorialize. The result feeds Phase 12 (pre-commit hook offer).
 
 ### Phase 6 — Logo detection
 
@@ -291,6 +312,29 @@ bun add -d typedoc typedoc-plugin-markdown
 
 Tell the user to run this; don't run it yourself.
 
+#### f) Tailor `src/content/docs/quickstart.md` to the detected stack
+
+The scaffolded `quickstart.md` ships with both Python and TypeScript autodoc subsections wrapped in HTML comment markers:
+
+```html
+<!-- abstract-data-setup:python-autodoc -->
+…Python instructions…
+<!-- /abstract-data-setup:python-autodoc -->
+
+<!-- abstract-data-setup:ts-autodoc -->
+…TypeScript instructions…
+<!-- /abstract-data-setup:ts-autodoc -->
+```
+
+After you've finalized the stack(s) for this project (Phase 7), edit `quickstart.md` to remove the irrelevant block:
+
+- **Python only** → strip everything between `<!-- abstract-data-setup:ts-autodoc -->` and `<!-- /abstract-data-setup:ts-autodoc -->` (inclusive).
+- **TypeScript only** → strip the Python block similarly.
+- **Both** → leave both blocks; remove only the comment markers themselves so the published page is clean.
+- **Neither** (no autodoc wired up) → strip both blocks plus the "## Add API reference" heading and intro paragraph.
+
+This is idempotent: re-runs of the skill check whether the markers still exist before pruning. If the user has already removed the markers (or hand-edited the file), leave it alone — never re-inject content into a customized quickstart.
+
 ### Phase 11 — Optionally run generators
 
 Per enabled generator, ask: "Generate now? [Yes / No]"
@@ -312,11 +356,35 @@ If yes: hand off to the `abstract-data-docs-author` skill (Claude Code: load the
 
 If no thin pages found, skip this phase silently. Don't push the docs-author skill on a project that doesn't need it.
 
-### Phase 12 — Optional pre-commit hook (Python only)
+### Phase 12 — Optional pre-commit hook (per-stack)
 
-Only fires if Phase 4a found Python modules below 80% coverage. Offer to install an `interrogate` pre-commit hook in the source repo.
+Fires only if Phase 4a (Python) or Phase 5a (TypeScript) found modules below the 80% coverage threshold.
 
-(Future: TSDoc coverage hook for TypeScript via `tsdoc-coverage` or similar — not implemented in this round.)
+**Python branch** — if Phase 4a found yellow/red modules, offer:
+
+- Tool: `interrogate` (lightweight, no project changes beyond the hook entry).
+- Config: append a `[tool.interrogate]` table to `pyproject.toml` setting `fail-under = 80`, `exclude = ["tests"]`, etc.
+- `.pre-commit-config.yaml`: add the `econchick/interrogate` repo with the chosen revision.
+
+**TypeScript branch** — if Phase 5a found yellow/red entry points, offer either:
+
+- **Local script hook (preferred)**: a one-liner `pre-commit` config that runs the docs build script with `--validation.notDocumented` and fails the commit if any new warnings appear. No extra dependencies beyond `typedoc` (already a dev dep).
+
+  ```yaml
+  # .pre-commit-config.yaml fragment
+  - repo: local
+    hooks:
+      - id: tsdoc-coverage
+        name: TSDoc coverage
+        entry: bunx typedoc --plugin typedoc-plugin-markdown --validation.notDocumented --treatValidationWarningsAsErrors true --emit none
+        language: system
+        types: [ts]
+        pass_filenames: false
+  ```
+
+- **`tsdoc-coverage` package** (if the user prefers a dedicated tool): npm install `tsdoc-coverage` as a dev dep and wire it as the hook entry instead. Threshold defaults to 80% to match the Python side.
+
+In both stacks: show the user the exact config diff before writing. The pre-commit hook lives in the **source repo**, not the docs repo — extra caution since it's a different project.
 
 ### Phase 13 — Summary
 
@@ -336,7 +404,6 @@ Only fires if Phase 4a found Python modules below 80% coverage. Offer to install
 - Next.js route map auto-config (recipe-only)
 - Prisma schema-doc auto-config (recipe-only)
 - Drizzle schema-doc auto-config (recipe-only — no mature tooling)
-- TSDoc coverage pre-commit hook
 - README/CHANGELOG/ADR auto-import into the sidebar
 
 ## Files this skill reads / writes
@@ -346,7 +413,7 @@ Only fires if Phase 4a found Python modules below 80% coverage. Offer to install
 
 **Writes (docs project):** `scripts/python-autodoc.json`, `scripts/ts-autodoc.json`, `astro.config.mjs` (edits), `package.json` (scripts only).
 
-**Writes (source project, Python pre-commit consent only):** `.pre-commit-config.yaml`, `pyproject.toml` (dev deps section), `requirements-dev.txt`.
+**Writes (source project, with explicit pre-commit consent only):** `.pre-commit-config.yaml`, `pyproject.toml` (dev deps section), `requirements-dev.txt`, or `package.json` (TS dev deps for `tsdoc-coverage` if chosen).
 
 ## Notes for the agent
 

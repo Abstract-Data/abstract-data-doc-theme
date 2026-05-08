@@ -130,7 +130,28 @@ Common shapes:
 - Multi-entry: `package.json` `exports` lists multiple → one entry per exported subpath
 - Monorepo: each package has its own entry
 
-Note: TypeDoc's docstring style is JSDoc/TSDoc — most TS projects use `/** ... */` comments. Quick coverage sniff is optional (TypeDoc still emits something for undocumented symbols).
+#### 5a — Audit TSDoc coverage
+
+Mirror Phase 4a for TypeScript. Run TypeDoc in **validation-only** mode against the chosen entry points:
+
+```bash
+bunx typedoc \
+  --plugin typedoc-plugin-markdown \
+  --validation.notDocumented \
+  --treatValidationWarningsAsErrors false \
+  --emit none \
+  <entryPoints>
+```
+
+Parse the resulting warnings — TypeDoc emits one line per undocumented symbol with `[warning]` prefix. Group by source file and report per-file coverage as a percentage of public exports that have at least one TSDoc block. Use the same color thresholds as the Python audit:
+
+- **≥ 80%** green
+- **50–79%** yellow
+- **< 50%** red
+
+If TypeDoc isn't installed yet, fall back to a quick AST sniff: count files in `src/` with `/**` blocks vs total exported declarations. Coarser, but no install required.
+
+Show the table; don't editorialize. The result feeds Phase 12 (pre-commit hook offer).
 
 ### Phase 6 — Logo detection
 
@@ -316,6 +337,29 @@ bun add -d typedoc typedoc-plugin-markdown
 
 Tell the user to run this; don't run it yourself.
 
+#### f) Tailor `src/content/docs/quickstart.md` to the detected stack
+
+The scaffolded `quickstart.md` ships with both Python and TypeScript autodoc subsections wrapped in HTML comment markers:
+
+```html
+<!-- abstract-data-setup:python-autodoc -->
+…Python instructions…
+<!-- /abstract-data-setup:python-autodoc -->
+
+<!-- abstract-data-setup:ts-autodoc -->
+…TypeScript instructions…
+<!-- /abstract-data-setup:ts-autodoc -->
+```
+
+After you've finalized the stack(s) for this project (Phase 7), edit `quickstart.md` to remove the irrelevant block:
+
+- **Python only** → strip everything between `<!-- abstract-data-setup:ts-autodoc -->` and `<!-- /abstract-data-setup:ts-autodoc -->` (inclusive).
+- **TypeScript only** → strip the Python block similarly.
+- **Both** → leave both blocks; remove only the comment markers themselves so the published page is clean.
+- **Neither** (no autodoc wired up) → strip both blocks plus the "## Add API reference" heading and intro paragraph.
+
+This is idempotent: re-runs of the skill check whether the markers still exist before pruning. If the user has already removed the markers (or hand-edited the file), leave it alone — never re-inject content into a customized quickstart.
+
 ### Phase 11 — Optionally run generators
 
 Per enabled generator, ask: "Generate now? [Yes / No]"
@@ -337,11 +381,35 @@ If yes: hand off to the `abstract-data-docs-author` skill (Claude Code: load the
 
 If no thin pages found, skip this phase silently. Don't push the docs-author skill on a project that doesn't need it.
 
-### Phase 12 — Optional pre-commit hook (Python only)
+### Phase 12 — Optional pre-commit hook (per-stack)
 
-Only fires if Phase 4a found Python modules below 80% coverage. Offer to install an `interrogate` pre-commit hook in the source repo.
+Fires only if Phase 4a (Python) or Phase 5a (TypeScript) found modules below the 80% coverage threshold.
 
-(Future: TSDoc coverage hook for TypeScript via `tsdoc-coverage` or similar — not implemented in this round.)
+**Python branch** — if Phase 4a found yellow/red modules, offer:
+
+- Tool: `interrogate` (lightweight, no project changes beyond the hook entry).
+- Config: append a `[tool.interrogate]` table to `pyproject.toml` setting `fail-under = 80`, `exclude = ["tests"]`, etc.
+- `.pre-commit-config.yaml`: add the `econchick/interrogate` repo with the chosen revision.
+
+**TypeScript branch** — if Phase 5a found yellow/red entry points, offer either:
+
+- **Local script hook (preferred)**: a one-liner `pre-commit` config that runs the docs build script with `--validation.notDocumented` and fails the commit if any new warnings appear. No extra dependencies beyond `typedoc` (already a dev dep).
+
+  ```yaml
+  # .pre-commit-config.yaml fragment
+  - repo: local
+    hooks:
+      - id: tsdoc-coverage
+        name: TSDoc coverage
+        entry: bunx typedoc --plugin typedoc-plugin-markdown --validation.notDocumented --treatValidationWarningsAsErrors true --emit none
+        language: system
+        types: [ts]
+        pass_filenames: false
+  ```
+
+- **`tsdoc-coverage` package** (if the user prefers a dedicated tool): npm install `tsdoc-coverage` as a dev dep and wire it as the hook entry instead. Threshold defaults to 80% to match the Python side.
+
+In both stacks: show the user the exact config diff before writing. The pre-commit hook lives in the **source repo**, not the docs repo — extra caution since it's a different project.
 
 ### Phase 13 — Summary
 
@@ -361,7 +429,6 @@ Only fires if Phase 4a found Python modules below 80% coverage. Offer to install
 - Next.js route map auto-config (recipe-only)
 - Prisma schema-doc auto-config (recipe-only)
 - Drizzle schema-doc auto-config (recipe-only — no mature tooling)
-- TSDoc coverage pre-commit hook
 - README/CHANGELOG/ADR auto-import into the sidebar
 
 ## Files this skill reads / writes
@@ -371,7 +438,7 @@ Only fires if Phase 4a found Python modules below 80% coverage. Offer to install
 
 **Writes (docs project):** `scripts/python-autodoc.json`, `scripts/ts-autodoc.json`, `astro.config.mjs` (edits), `package.json` (scripts only).
 
-**Writes (source project, Python pre-commit consent only):** `.pre-commit-config.yaml`, `pyproject.toml` (dev deps section), `requirements-dev.txt`.
+**Writes (source project, with explicit pre-commit consent only):** `.pre-commit-config.yaml`, `pyproject.toml` (dev deps section), `requirements-dev.txt`, or `package.json` (TS dev deps for `tsdoc-coverage` if chosen).
 
 ## Notes for the agent
 
@@ -435,6 +502,47 @@ Read these files (top-down, bail if absent):
 - Any `docs/adr/` directory or `ARCHITECTURE.md` — important context
 
 Note the source project root (from `searchPath` in `python-autodoc.json` or `entryPoints` in `ts-autodoc.json`). All source reads go relative to that.
+
+### Phase 1.5 — Inventory existing prose
+
+Before profiling or writing anything new, build a manifest of prose that **already exists in the source project**. Most projects have a substantial amount of usable narrative scattered across `README.md`, `CHANGELOG.md`, ADRs, and existing docstrings — rewriting it from scratch wastes tokens and risks contradicting the source's own voice.
+
+For each candidate file, read it once and produce a line-item inventory:
+
+- **`README.md`** — for each `##` section, note: heading, ~10-word summary, candidate destination. Common reuse targets:
+  - "Quick start" / "Installation" / "Getting started" → `src/content/docs/quickstart.md`
+  - "Features" / "What it does" / "Why use this" → `src/content/docs/index.mdx` hero subtitle + `concepts.md` intro
+  - "Architecture" / "How it works" / "Design" → `src/content/docs/concepts.md` body
+  - "Configuration" / "Options" → a guide or the relevant module overview
+  - "Examples" / "Usage" → split across module Example blocks
+  - "Contributing" → leave in repo, link from docs sidebar
+- **`CHANGELOG.md`** — note the most recent 1–3 entries. Don't import wholesale; harvest noteworthy feature additions for the concepts page ("Recent additions") or for module overviews ("Added in v0.4 to address …").
+- **`docs/adr/*.md`** or **`ARCHITECTURE.md`** — for each ADR, note: title, decision, the 1–2 sentence rationale. ADRs are *gold* for the `concepts.md` page — they explain *why* the architecture looks the way it does. Quote the rationale, link out to the ADR for full context.
+- **`CONTRIBUTING.md`** — usually stays in repo; mine for any "How to add a new X" sections that should become how-to guides under `src/content/docs/guides/`.
+- **Existing module docstrings** — even if the autodoc page reads as thin, the source `.py` / `.ts` may have a leading module docstring with usable framing. Note which modules have them (Phase 6 will reuse the wording verbatim where appropriate).
+
+Output the inventory as a brief plan to memory before moving on:
+
+```
+README sections worth lifting:
+  - "## Quick start" → quickstart.md (verbatim, light edit)
+  - "## How it works" → concepts.md intro (paraphrase)
+  - "## Why httpx?" → core/http_scan module overview (paraphrase + link to ADR-007)
+
+CHANGELOG highlights:
+  - v0.4: Added BaseHttpScanModule (link to ADR-007)
+  - v0.3: AI integration via Ollama (concepts.md "Optional integrations" section)
+
+ADRs:
+  - ADR-001 "Use httpx not requests" → quote in concepts.md
+  - ADR-007 "BaseHttpScanModule" → quote in core/http_scan overview
+
+Modules with usable existing docstrings: auditkit.core, auditkit.transport.curl_impersonate
+```
+
+When you reach Phases 5 and 6, **prefer lifting existing prose** (with light cleanup and proper attribution if it's a paraphrase from an ADR) over fabricating new wording. Always offer the user a side-by-side: "README says X, ADR says Y, here's the merged version — keep, edit, or rewrite?"
+
+If the source project has *no* README beyond a one-liner and *no* ADRs, say so up front — the user should know the docs-author run will need to invent more, and that voice will be yours rather than the project's.
 
 ### Phase 2 — Profile the project
 

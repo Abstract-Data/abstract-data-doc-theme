@@ -4,5 +4,7 @@
   "modules": [
     "example_module"
   ],
-  "outputDir": "src/content/docs/api"
+  "outputDir": "src/content/docs/api",
+  "repoUrl": "",
+  "repoBranch": "main"
 }

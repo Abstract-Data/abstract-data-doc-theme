@@ -102,18 +102,44 @@ import Glitch from '@abstractdata/starlight-theme/components/Glitch.astro';
 # <Glitch text="404" /> Not Found
 ```
 
-## Add API reference (Python)
+## Add API reference
 
-If your project has Python source:
+The template ships two autodoc pipelines — pick the one(s) that match your source. The `abstract-data-setup` workflow can detect your stack and prune this section automatically; if you'd rather drive it manually, follow whichever subsection applies.
+
+<!-- abstract-data-setup:python-autodoc -->
+
+### Python source
 
 ```bash
 bun run docs:python
 ```
 
-Reads `scripts/python-autodoc.json`, generates Markdown pages under `src/content/docs/api/` from your module docstrings via `pydoc-markdown`. Points your AI assistant at "set up docs" if you'd rather have a guided walkthrough instead — it'll detect Python signals, audit docstring coverage, ask which modules to document, and write the config for you.
+Reads `scripts/python-autodoc.json`, generates Markdown pages under `src/content/docs/api/` from your module docstrings via `pydoc-markdown`. Edit the config to point `searchPath` at your Python source root and list the `modules` you want documented.
 
 :::caution
 You need `pydoc-markdown` installed in your local Python environment: `pipx install pydoc-markdown` or `pip install --user pydoc-markdown`.
+:::
+
+<!-- /abstract-data-setup:python-autodoc -->
+
+<!-- abstract-data-setup:ts-autodoc -->
+
+### TypeScript source
+
+```bash
+bun run docs:ts
+```
+
+Reads `scripts/ts-autodoc.json`, generates Markdown pages under `src/content/docs/api/ts/` from your TSDoc comments via TypeDoc + `typedoc-plugin-markdown`. Point `entryPoints` at the entry TS files and `tsconfig` at the matching tsconfig.
+
+:::caution
+Install once as dev deps: `bun add -d typedoc typedoc-plugin-markdown`.
+:::
+
+<!-- /abstract-data-setup:ts-autodoc -->
+
+:::tip[Guided setup]
+Open Claude Code or Cursor in this folder and say *"set up docs"* — the bundled `abstract-data-setup` workflow detects your stack(s), audits docstring coverage, asks which modules to document, writes the configs, and tailors this very page so only the relevant autodoc subsection remains.
 :::
 
 ## Deploy

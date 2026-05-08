@@ -48,6 +48,47 @@ Read these files (top-down, bail if absent):
 
 Note the source project root (from `searchPath` in `python-autodoc.json` or `entryPoints` in `ts-autodoc.json`). All source reads go relative to that.
 
+### Phase 1.5 — Inventory existing prose
+
+Before profiling or writing anything new, build a manifest of prose that **already exists in the source project**. Most projects have a substantial amount of usable narrative scattered across `README.md`, `CHANGELOG.md`, ADRs, and existing docstrings — rewriting it from scratch wastes tokens and risks contradicting the source's own voice.
+
+For each candidate file, read it once and produce a line-item inventory:
+
+- **`README.md`** — for each `##` section, note: heading, ~10-word summary, candidate destination. Common reuse targets:
+  - "Quick start" / "Installation" / "Getting started" → `src/content/docs/quickstart.md`
+  - "Features" / "What it does" / "Why use this" → `src/content/docs/index.mdx` hero subtitle + `concepts.md` intro
+  - "Architecture" / "How it works" / "Design" → `src/content/docs/concepts.md` body
+  - "Configuration" / "Options" → a guide or the relevant module overview
+  - "Examples" / "Usage" → split across module Example blocks
+  - "Contributing" → leave in repo, link from docs sidebar
+- **`CHANGELOG.md`** — note the most recent 1–3 entries. Don't import wholesale; harvest noteworthy feature additions for the concepts page ("Recent additions") or for module overviews ("Added in v0.4 to address …").
+- **`docs/adr/*.md`** or **`ARCHITECTURE.md`** — for each ADR, note: title, decision, the 1–2 sentence rationale. ADRs are *gold* for the `concepts.md` page — they explain *why* the architecture looks the way it does. Quote the rationale, link out to the ADR for full context.
+- **`CONTRIBUTING.md`** — usually stays in repo; mine for any "How to add a new X" sections that should become how-to guides under `src/content/docs/guides/`.
+- **Existing module docstrings** — even if the autodoc page reads as thin, the source `.py` / `.ts` may have a leading module docstring with usable framing. Note which modules have them (Phase 6 will reuse the wording verbatim where appropriate).
+
+Output the inventory as a brief plan to memory before moving on:
+
+```
+README sections worth lifting:
+  - "## Quick start" → quickstart.md (verbatim, light edit)
+  - "## How it works" → concepts.md intro (paraphrase)
+  - "## Why httpx?" → core/http_scan module overview (paraphrase + link to ADR-007)
+
+CHANGELOG highlights:
+  - v0.4: Added BaseHttpScanModule (link to ADR-007)
+  - v0.3: AI integration via Ollama (concepts.md "Optional integrations" section)
+
+ADRs:
+  - ADR-001 "Use httpx not requests" → quote in concepts.md
+  - ADR-007 "BaseHttpScanModule" → quote in core/http_scan overview
+
+Modules with usable existing docstrings: auditkit.core, auditkit.transport.curl_impersonate
+```
+
+When you reach Phases 5 and 6, **prefer lifting existing prose** (with light cleanup and proper attribution if it's a paraphrase from an ADR) over fabricating new wording. Always offer the user a side-by-side: "README says X, ADR says Y, here's the merged version — keep, edit, or rewrite?"
+
+If the source project has *no* README beyond a one-liner and *no* ADRs, say so up front — the user should know the docs-author run will need to invent more, and that voice will be yours rather than the project's.
+
 ### Phase 2 — Profile the project
 
 Spend 1–2 conversation turns building a project profile. Not a deep code read yet — orientation only:

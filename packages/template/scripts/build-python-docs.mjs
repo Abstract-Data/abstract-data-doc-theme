@@ -68,8 +68,10 @@ try {
 mkdirSync(outputDir, { recursive: true });
 log(`${c.dim}→ generating ${cfg.modules.length} module page${cfg.modules.length === 1 ? '' : 's'}${c.reset}`);
 
-let generated = 0;
-const generatedFiles = [];
+// Two-pass build: first generate every page in memory so the thin-page
+// post-processor can cross-reference siblings (for "Submodules" sections
+// on package landing pages), then write everything to disk.
+const pages = []; // { mod, safeName, outPath, title, description, body, frontmatter }
 
 for (const mod of cfg.modules) {
   const safeName = mod.replace(/\./g, '_');
@@ -132,17 +134,122 @@ for (const mod of cfg.modules) {
     '',
   ].join('\n');
 
-  writeFileSync(outPath, frontmatter + body);
-  generated += 1;
-  generatedFiles.push(relative(PROJECT_ROOT, outPath));
+  pages.push({ mod, safeName, outPath, title, description, body, frontmatter });
   log(`${c.green}  ✓${c.reset} ${mod} ${c.dim}→ ${relative(PROJECT_ROOT, outPath)}${c.reset}`);
 }
 
-log('');
-if (generated === 0) {
+if (pages.length === 0) {
   die('No pages generated. Check the modules list and searchPath in python-autodoc.json.');
 }
-log(`${c.green}✓${c.reset} Generated ${c.gold}${generated}${c.reset} page${generated === 1 ? '' : 's'} in ${c.cyan}${relative(PROJECT_ROOT, outputDir)}${c.reset}/`);
+
+// ─── Thin-page post-processor ─────────────────────────────────────────
+// Two enrichments:
+//   1. Package landings (modules with documented children, e.g. `auditkit`
+//      when `auditkit.config` is also documented) get an auto-generated
+//      "## Submodules" section listing each child with its description.
+//   2. Thin pages (no module-level docstring → almost-empty body) get a
+//      `:::note` banner explaining the gap so the reader isn't surprised
+//      by a near-blank page.
+// If `cfg.repoUrl` is set, every enriched page also gets a "View source"
+// footer link.
+log('');
+log(`${c.dim}→ post-processing thin pages${c.reset}`);
+
+const documentedSet = new Set(pages.map((p) => p.mod));
+const childrenOf = (mod) => pages.filter((p) => p.mod !== mod && p.mod.startsWith(mod + '.'));
+
+let enriched = 0;
+let bannered = 0;
+
+for (const page of pages) {
+  // Count prose-y lines (excludes headings, fences, lists, tables, raw HTML)
+  const proseLines = page.body.split('\n').filter((l) => {
+    const t = l.trim();
+    if (!t) return false;
+    if (/^#{1,6} /.test(t)) return false;
+    if (t.startsWith('```')) return false;
+    if (t.startsWith('|') || /^[-=]{3,}/.test(t)) return false;
+    if (/^[-*+] /.test(t)) return false;
+    if (/^<[^>]+>/.test(t)) return false;
+    return true;
+  }).length;
+  const bodyChars = page.body.replace(/\s+/g, '').length;
+  // "Thin" = barely any body content. Require *both* near-empty char count
+  // and zero prose lines so we don't badge pages that have a one-line
+  // docstring (which is sparse but not absent).
+  const isThin = bodyChars < 150 && proseLines < 1;
+
+  const kids = childrenOf(page.mod);
+  const isPackageLanding = kids.length > 0;
+
+  let newBody = page.body;
+  let touched = false;
+
+  if (isThin && !isPackageLanding) {
+    // Inject sparse-page banner above body. Worded carefully — we know
+    // the page is short, but we don't *know* whether the source has a
+    // docstring (pydoc-markdown sometimes drops them) so phrase as a
+    // suggestion rather than an assertion.
+    const banner = [
+      '',
+      ':::note[This page is sparse]',
+      `The auto-generated reference for \`${page.mod}\` is short. Expanding the source docstring at the top of \`${page.mod.replace(/\./g, '/')}.py\` (a sentence about purpose, when to use it, and a tiny example) would populate this page with real context.`,
+      ':::',
+      '',
+    ].join('\n');
+    newBody = banner + newBody;
+    bannered += 1;
+    touched = true;
+    log(`${c.gold}  ⚠${c.reset} thin-page banner on ${page.mod}`);
+  }
+
+  if (isPackageLanding) {
+    // Build a Submodules section linking to siblings via .md refs
+    // (Astro/Starlight rewrites these to slug URLs at build time).
+    const lines = ['', '## Submodules', ''];
+    for (const kid of kids) {
+      const summary = kid.description && !kid.description.startsWith('API reference for')
+        ? ` — ${kid.description}`
+        : '';
+      lines.push(`- [\`${kid.mod}\`](./${kid.safeName}.md)${summary}`);
+    }
+    lines.push('');
+    const submodulesSection = lines.join('\n');
+
+    if (isThin) {
+      // Replace stub body with brief intro + submodules
+      newBody = `\nTop-level package — see submodules below for the documented API surface.\n${submodulesSection}`;
+    } else {
+      // Append to existing body
+      newBody = newBody.replace(/\s+$/, '') + '\n' + submodulesSection;
+    }
+    enriched += 1;
+    touched = true;
+    log(`${c.green}  ✓${c.reset} added Submodules section to ${page.mod} (${kids.length} child${kids.length === 1 ? '' : 'ren'})`);
+  }
+
+  // Optional "View source" footer if repoUrl is configured
+  if (touched && cfg.repoUrl) {
+    const branch = cfg.repoBranch ?? 'main';
+    const repo = cfg.repoUrl.replace(/\/$/, '');
+    const sourcePath = page.mod.replace(/\./g, '/');
+    // Best-effort: link to the package __init__.py for landing pages,
+    // module .py for leaf modules. Either way the reader gets close.
+    const target = isPackageLanding
+      ? `${sourcePath}/__init__.py`
+      : `${sourcePath}.py`;
+    newBody = newBody.replace(/\s+$/, '') +
+      `\n\n## See also\n\n- [View source on GitHub](${repo}/blob/${branch}/${target})\n`;
+  }
+
+  writeFileSync(page.outPath, page.frontmatter + newBody);
+}
+
+log('');
+log(`${c.green}✓${c.reset} Generated ${c.gold}${pages.length}${c.reset} page${pages.length === 1 ? '' : 's'} in ${c.cyan}${relative(PROJECT_ROOT, outputDir)}${c.reset}/`);
+if (enriched || bannered) {
+  log(`${c.dim}  ${enriched} package landing${enriched === 1 ? '' : 's'} enriched, ${bannered} thin page${bannered === 1 ? '' : 's'} flagged${c.reset}`);
+}
 log(`${c.dim}  Sidebar wiring (astro.config.mjs):${c.reset}`);
 log(`${c.dim}    { label: 'API Reference', autogenerate: { directory: 'api' } }${c.reset}`);
 log('');

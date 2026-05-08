@@ -98,7 +98,9 @@ function walk(dir) {
   return out;
 }
 
-let processed = 0;
+// Two-pass: first read + frontmatter every page in memory, then
+// post-process for thin / package-landing enrichment.
+const pages = []; // { file, title, description, body, frontmatter }
 for (const file of walk(outputDir)) {
   let content = readFileSync(file, 'utf8');
   if (content.startsWith('---\n')) continue; // already has frontmatter
@@ -127,12 +129,98 @@ for (const file of walk(outputDir)) {
   const frontmatter = [
     '---', `title: ${title}`, `description: "${description}"`, '---', '',
   ].join('\n');
-  writeFileSync(file, frontmatter + body);
-  processed += 1;
+  pages.push({ file, title, description, body, frontmatter });
+}
+
+// ─── Thin-page post-processor (TypeScript) ────────────────────────────
+// TypeDoc emits a tree: index/README + modules/, classes/, functions/, …
+// We treat the index file (if any) as the package landing and any other
+// near-empty page as "thin" — it gets a `:::note` banner explaining that
+// the source TSDoc is sparse.
+log(`${c.dim}→ post-processing thin pages${c.reset}`);
+
+let bannered = 0;
+let enriched = 0;
+
+// Identify the index/README/landing page (lives at the root of outputDir)
+const landingPage = pages.find((p) => {
+  const rel = relative(outputDir, p.file);
+  return /^(index|readme|globals|modules)\.md$/i.test(rel);
+});
+
+for (const page of pages) {
+  const proseLines = page.body.split('\n').filter((l) => {
+    const t = l.trim();
+    if (!t) return false;
+    if (/^#{1,6} /.test(t)) return false;
+    if (t.startsWith('```')) return false;
+    if (t.startsWith('|') || /^[-=]{3,}/.test(t)) return false;
+    if (/^[-*+] /.test(t)) return false;
+    if (/^<[^>]+>/.test(t)) return false;
+    return true;
+  }).length;
+  const bodyChars = page.body.replace(/\s+/g, '').length;
+  // "Thin" = barely any body content. Require *both* near-empty char count
+  // and zero prose lines so we don't badge pages that have a one-line
+  // TSDoc summary (which is sparse but not absent).
+  const isThin = bodyChars < 150 && proseLines < 1;
+
+  let newBody = page.body;
+  let touched = false;
+
+  if (page === landingPage) {
+    // Build a Submodules section linking to siblings (skip self)
+    const others = pages.filter((p) => p !== landingPage);
+    if (others.length > 0) {
+      const lines = ['', '## Submodules', ''];
+      for (const sib of others) {
+        const rel = relative(outputDir, sib.file).replace(/\.md$/, '');
+        const summary = sib.description && !sib.description.startsWith('API reference for')
+          ? ` — ${sib.description}`
+          : '';
+        lines.push(`- [\`${sib.title}\`](./${rel}.md)${summary}`);
+      }
+      lines.push('');
+      const submodulesSection = lines.join('\n');
+      if (isThin) {
+        newBody = `\nTop-level entry — see modules below for the full API surface.\n${submodulesSection}`;
+      } else {
+        newBody = newBody.replace(/\s+$/, '') + '\n' + submodulesSection;
+      }
+      enriched += 1;
+      touched = true;
+      log(`${c.green}  ✓${c.reset} added Submodules section to ${relative(outputDir, page.file)} (${others.length} sibling${others.length === 1 ? '' : 's'})`);
+    }
+  } else if (isThin) {
+    const banner = [
+      '',
+      ':::note[This page is sparse]',
+      `The auto-generated reference for \`${page.title}\` is short. Expanding the leading \`/** ... */\` TSDoc comment in the source (purpose, when to use it, a tiny example) would populate this page with real context.`,
+      ':::',
+      '',
+    ].join('\n');
+    newBody = banner + newBody;
+    bannered += 1;
+    touched = true;
+    log(`${c.gold}  ⚠${c.reset} thin-page banner on ${relative(outputDir, page.file)}`);
+  }
+
+  // Optional "View source" footer
+  if (touched && cfg.repoUrl) {
+    const branch = cfg.repoBranch ?? 'main';
+    const repo = cfg.repoUrl.replace(/\/$/, '');
+    newBody = newBody.replace(/\s+$/, '') +
+      `\n\n## See also\n\n- [View on GitHub](${repo}/tree/${branch})\n`;
+  }
+
+  writeFileSync(page.file, page.frontmatter + newBody);
 }
 
 log('');
-log(`${c.green}✓${c.reset} Generated ${c.gold}${processed}${c.reset} TypeScript API page${processed === 1 ? '' : 's'} in ${c.cyan}${relative(PROJECT_ROOT, outputDir)}${c.reset}/`);
+log(`${c.green}✓${c.reset} Generated ${c.gold}${pages.length}${c.reset} TypeScript API page${pages.length === 1 ? '' : 's'} in ${c.cyan}${relative(PROJECT_ROOT, outputDir)}${c.reset}/`);
+if (enriched || bannered) {
+  log(`${c.dim}  ${enriched} landing page${enriched === 1 ? '' : 's'} enriched, ${bannered} thin page${bannered === 1 ? '' : 's'} flagged${c.reset}`);
+}
 log(`${c.dim}  Sidebar wiring (astro.config.mjs):${c.reset}`);
 log(`${c.dim}    { label: 'TS API', autogenerate: { directory: 'api/ts' } }${c.reset}`);
 log('');
