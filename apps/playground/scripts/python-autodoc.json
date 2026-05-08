@@ -1,17 +1,10 @@
 {
-  "$schema": "Configuration for scripts/build-python-docs.mjs. Adjust to point at your Python source.",
   "searchPath": "../../../website-auditkit/src",
-  "modules": [
-    "auditkit",
-    "auditkit.config",
-    "auditkit.bootstrap",
-    "auditkit.batch",
-    "auditkit.constants",
-    "auditkit.core",
-    "auditkit.transport.curl_impersonate",
-    "auditkit.services.authorization"
-  ],
+  "modules": ["auditkit.config", "auditkit.bootstrap", "auditkit.constants"],
   "outputDir": "src/content/docs/api",
-  "repoUrl": "",
-  "repoBranch": "main"
+  "versions": [
+    { "tag": "v0.1.0", "label": "0.1 (latest)", "default": true },
+    { "tag": "synthetic-v0.0.5", "label": "0.0.5" },
+    { "tag": "synthetic-v0.0.1", "label": "0.0.1 (legacy)" }
+  ]
 }

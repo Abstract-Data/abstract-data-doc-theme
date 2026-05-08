@@ -413,6 +413,87 @@ If yes: hand off to the `abstract-data-docs-author` skill (Claude Code: load the
 
 If no thin pages found, skip this phase silently. Don't push the docs-author skill on a project that doesn't need it.
 
+### Phase 11.7 — Versioned API reference (only if source has 2+ tags)
+
+Run `git -C <source-repo> tag --list 'v*' | wc -l` (or equivalent) on the **source** repo (not the docs project). If the result is < 2, skip this phase silently.
+
+Otherwise, surface the choice:
+
+> "I see your source has N tagged releases. Versioned API reference is supported four ways. Which do you want?"
+
+Multi-choice prompt:
+
+1. **Source-driven (Recommended for API-only versioning).** Adds a `versions` array to `python-autodoc.json` / `ts-autodoc.json`. Each rebuild checks out the source repo at each tag (via `git worktree add`), regenerates the API reference per tag into `<outputDir>/<safeTag>/`, and aliases the default version at the un-versioned URL. Cheap, composable, no branches to maintain. The bundled `<VersionPicker>` component renders a topbar dropdown.
+2. **`starlight-versions` plugin** — opinionated, archives the entire site (guides + API). Pick this only if guides drift between versions too. Pre-1.0; expect rough edges.
+3. **Branch-per-version** — each major version is a git branch deployed to a subdomain, the main branch's host (Vercel/CF) rewrites `/v2/*` → that subdomain. Best when teams already maintain per-version branches.
+4. **Single version (no versioning).** Default if the user is unsure. Easy to add versioning later.
+
+Default the recommendation to **option 1** when the project has Python or TypeScript autodoc wired (Phases 4/5 ran). Default to **option 2** when the docs project has substantial hand-written guides and the user expects them to differ per version.
+
+If the user picks option 1:
+
+a. Surface up to the 5 most recent tags as candidates. Ask which to publish — let them deselect noisy point releases. Mark the most recent as `default: true` unless the user picks a different one (e.g. an LTS tag).
+
+b. Write the `versions` array into the appropriate autodoc JSON config. Example shape:
+
+```jsonc
+{
+  "searchPath": "../../auditkit/src",
+  "modules": [...],
+  "outputDir": "src/content/docs/api",
+  "versions": [
+    { "tag": "v0.4.0", "label": "0.4 (latest)", "default": true },
+    { "tag": "v0.3.2", "label": "0.3" },
+    { "tag": "v0.2.0", "label": "0.2 (legacy)" }
+  ]
+}
+```
+
+c. **No override needed.** The `abstractData()` plugin already overrides `SocialIcons` to render `<VersionPicker>` next to the existing chip and social links. As soon as the autodoc orchestrator emits per-version pages with `version:` frontmatter, the picker appears in the topbar automatically — no user-side wiring, no `versions` prop to maintain. The picker walks the docs collection at build time, dedupes by tag, picks up the `versionDefault: true` flag for the default version. The autodoc JSON is the single source of truth.
+
+If the autodoc base path differs from the default `/api` (e.g. `outputDir: "src/content/docs/api/ts"` for TypeScript-only sites), pass `apiBase` to the plugin so the picker constructs the right URLs:
+
+```js
+starlight({
+  plugins: [
+    abstractData({
+      motion: 'calm',
+      apiBase: '/api/ts',
+    }),
+  ],
+})
+```
+
+d. **Verify the docs project's content schema accepts the version frontmatter fields.** Read `src/content.config.ts` and confirm the `docsSchema.extend` zod object includes:
+
+```ts
+version: z.string().optional(),
+versionLabel: z.string().optional(),
+versionDefault: z.boolean().optional(),
+```
+
+The `create-docs` template scaffold already ships with these. For projects upgraded via `bunx abstract-data-install-skills`, you'll need to add them — without these optional fields, Zod will reject the autodoc-emitted frontmatter and the build fails with `InvalidContentEntryDataError`.
+
+e. Tell the user to run `bun run docs:python` (or `docs:ts`) to populate the per-version directories. The script handles the worktrees automatically.
+
+f. **Optional curated override.** If the user wants to hide pre-release tags or reorder the dropdown, they can wire a user-level override of `SocialIcons` that imports `<VersionPicker>` and passes an explicit `versions` prop — that bypasses auto-discovery. Don't recommend this by default; auto-discovery keeps the autodoc JSON as the single source of truth.
+
+If the user picks option 2 (`starlight-versions`):
+
+- Install: `bun add starlight-versions`
+- Add to `astro.config.mjs` plugins array
+- Run the plugin's CLI to archive the current state
+- Configure `starlight-versions.versions` to match the user's version list
+- Note: this conflicts with option 1 — pick *one*.
+
+If the user picks option 3 (branch-per-version):
+
+- This is mostly a deployment-platform concern. Suggest the Knip pattern (Vercel rewrites) and link them at [webpro.nl/scraps/versioned-docs-with-starlight-and-vercel](https://webpro.nl/scraps/versioned-docs-with-starlight-and-vercel). Don't try to wire this yourself — too platform-specific.
+
+If the user picks option 4 (none): skip silently, leave `versions` field absent from the autodoc config.
+
+**Site version vs. API version** — they're different. The `version` chip in the theme's plugin call (e.g. `version: 'v1.0.0'`) is the *site's own* marketing version. The `versions` array in autodoc configs is the *documented API's* versions. A site might be at `v1.2.0` while documenting API `v0.4.0` — that's normal, don't conflate them.
+
 ### Phase 12 — Optional pre-commit hook (per-stack)
 
 Fires only if Phase 4a (Python) or Phase 5a (TypeScript) found modules below the 80% coverage threshold.

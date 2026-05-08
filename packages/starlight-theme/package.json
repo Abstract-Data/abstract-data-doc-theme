@@ -1,6 +1,6 @@
 {
   "name": "@abstractdata/starlight-theme",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Abstract Data Documentation Theme — the branded docs system Abstract Data uses across client projects. Built on Astro Starlight. HUD and Calm surfaces, light + dark, motion-aware. Ships with the abstract-data-setup skill (Claude Code, Cursor, GitHub Copilot) for one-command project setup.",
   "type": "module",
   "main": "./src/index.ts",
@@ -49,11 +49,11 @@
     "@fontsource-variable/orbitron": "^5.0.0"
   },
   "peerDependencies": {
-    "@astrojs/starlight": ">=0.32.0",
-    "astro": ">=5.0.0"
+    "@astrojs/starlight": ">=0.34.0 <0.38.0",
+    "astro": ">=5.0.0 <6.0.0"
   },
   "devDependencies": {
-    "@astrojs/starlight": "^0.34.0",
+    "@astrojs/starlight": "~0.37.0",
     "astro": "^5.10.0",
     "typescript": "^5.6.0"
   }

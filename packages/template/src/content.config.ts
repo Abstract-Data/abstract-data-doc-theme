@@ -23,11 +23,23 @@ export const collections = {
     loader: docsLoader(),
     schema: docsSchema({
       extend: z.object({
+        // ── User-authored fields ───────────────────────────────────
         category: z.string().optional(),
         audience: z
           .enum(['user', 'contributor', 'maintainer'])
           .optional(),
         lastReviewed: z.coerce.date().optional(),
+
+        // ── Theme-managed fields ───────────────────────────────────
+        // Written by the autodoc orchestrators (build-python-docs.mjs /
+        // build-ts-docs.mjs) onto every page emitted under a `versions[]`
+        // tag. The bundled <VersionPicker> reads them via
+        // getCollection('docs') so the autodoc JSON stays the canonical
+        // source of truth — no duplicating the version list in your
+        // override component. Don't hand-edit these.
+        version: z.string().optional(),
+        versionLabel: z.string().optional(),
+        versionDefault: z.boolean().optional(),
       }),
     }),
   }),

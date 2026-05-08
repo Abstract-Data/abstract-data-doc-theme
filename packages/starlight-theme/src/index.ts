@@ -36,6 +36,21 @@ export interface AbstractDataThemeConfig {
    * `expressiveCode.themes` in `astro.config.mjs`.
    */
   shiki?: boolean;
+
+  /**
+   * Base URL of the API reference for the bundled `<VersionPicker>`.
+   * Match `outputDir` in your autodoc JSON config (relative to
+   * `src/content/docs/`). Defaults to `/api`.
+   *
+   * The picker auto-discovers the version list from the docs collection's
+   * `version:` frontmatter (written by the autodoc orchestrator), so you
+   * don't need to maintain a separate version array — point this at the
+   * correct base path and the rest is automatic.
+   *
+   * @example "/api"          // python-autodoc.json: "outputDir": "src/content/docs/api"
+   * @example "/api/ts"       // ts-autodoc.json:    "outputDir": "src/content/docs/api/ts"
+   */
+  apiBase?: string;
 }
 
 const PLUGIN_NAME = '@abstractdata/starlight-theme';
@@ -62,8 +77,9 @@ export default function abstractDataTheme(
   const credit = opts.credit ?? 'auto';
   const version = opts.version ?? null;
   const shiki = opts.shiki ?? true;
+  const apiBase = opts.apiBase ?? '/api';
 
-  const runtimeConfig = JSON.stringify({ motion, credit, version });
+  const runtimeConfig = JSON.stringify({ motion, credit, version, apiBase });
 
   return {
     name: PLUGIN_NAME,

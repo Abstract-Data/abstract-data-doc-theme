@@ -1,16 +1,31 @@
 ---
 /**
  * Override of Starlight's <SocialIcons /> slot.
- * Renders the default content, then appends the Abstract Data version chip
- * if `version` is configured on the theme plugin.
+ *
+ * Renders, in order:
+ *   1. <VersionPicker /> — auto-discovers versions from frontmatter; renders
+ *      nothing when fewer than 2 versions exist or the user isn't on an
+ *      API page. Zero-config: as soon as the autodoc orchestrator emits
+ *      versioned pages, the picker appears.
+ *   2. The default SocialIcons (GitHub, etc.).
+ *   3. The Abstract Data version chip if `version` is configured on the
+ *      theme plugin.
  *
  * The chip carries the `ad-version-chip` class. When `motion: 'full'`,
  * `hud.css` adds an idle glitch-pulse + a hover-triggered glitch.
+ *
+ * Why this lives in the plugin (not a user override): Starlight gives
+ * plugin-level `components` overrides higher precedence than user-level
+ * ones, so a user override would lose to ours and the version chip would
+ * disappear. Composing here keeps both features without conflicts.
  */
 import type { Props } from '@astrojs/starlight/props';
 import Default from '@astrojs/starlight/components/SocialIcons.astro';
+import VersionPicker from './VersionPicker.astro';
 import { config } from 'virtual:abstractdata/config';
 ---
+
+<VersionPicker apiBase={config.apiBase ?? '/api'} />
 
 <Default {...Astro.props} />
 
