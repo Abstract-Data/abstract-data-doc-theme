@@ -115,12 +115,40 @@ Note: TypeDoc's docstring style is JSDoc/TSDoc — most TS projects use `/** ...
 
 ### Phase 6 — Logo detection
 
-If at least one logo candidate found in `src/assets/`:
-- One candidate → propose using it
-- Multiple → ask which (or "none, set later")
-- Zero → ask if user has a logo to drop in or wants to skip for now
+Scan `src/assets/**/*.{png,svg,jpg,jpeg,webp}` recursively. Build candidate categories:
 
-Whichever they pick, plan to update `astro.config.mjs`'s `logo.src` field.
+- **Topbar mark candidates**: filename matches `(logo|brand|mark|icon)\.(svg|png|webp)$` (case-insensitive). SVG preferred.
+- **Light/dark pair**: filenames contain `light` or `dark` and otherwise match logo conventions (e.g. `logo-light.svg` + `logo-dark.svg`). Starlight supports both via `logo.light` + `logo.dark`.
+- **Hero candidates**: any image larger than ~80KB or with `hero` / `splash` in the name — usually a bigger variant for the splash page.
+- **Other images**: no logo conventions; treat as miscellaneous.
+
+For each candidate, gather:
+- File size in bytes
+- Format (extension)
+- Whether the filename indicates light/dark intent
+
+Display a 4-7 line summary table:
+
+```
+File                              Size      Format     Suggested role
+src/assets/logo.svg               12 KB     SVG        topbar mark (recommended)
+src/assets/logo-light.svg         12 KB     SVG        topbar (light mode)
+src/assets/logo-dark.svg          12 KB     SVG        topbar (dark mode)
+src/assets/hero-mark.png          145 KB    PNG        splash hero image
+```
+
+Branch on what you found:
+
+- **One mark + light/dark pair** → propose using the pair (Starlight handles auto-switching by `data-theme`)
+- **One mark, no pair** → propose using it for both modes
+- **Multiple marks, no clear winner** → multiselect: which for topbar? Which for hero? `multiSelect: true` interactive prompt.
+- **Zero candidates** → ask: "I don't see a logo in `src/assets/`. Drop one in (SVG preferred, ~256x256 minimum), tell me where it is, or skip for now and configure manually later."
+
+Format guidance to surface alongside the prompt:
+- SVG renders crispest at any size; preferred for both topbar and hero.
+- PNG works fine; 256×256 minimum for the topbar (Astro will downscale via the asset pipeline).
+- JPG is fine for hero photos but bad for marks (compression artifacts on edges).
+- Files > 200KB will bloat first-paint; suggest optimizing or using a smaller source.
 
 ### Phase 7 — Recommend documentation surfaces
 
@@ -162,9 +190,55 @@ Otherwise, batch into one prompt:
 2. Credit: auto | hide
 3. Version chip: show with version string | omit
 
-### Phase 9 — Confirm logo
+### Phase 9 — Configure logo
 
-If a logo candidate was identified in Phase 6 and the user hasn't confirmed yet, confirm the path and that you'll update `astro.config.mjs`'s `logo.src`.
+Two surfaces need updating:
+
+**a) Topbar logo — `astro.config.mjs` `starlight.logo`**
+
+Ask the user one final question if not already known: does this logo image include the project name as text/wordmark?
+
+- **Yes** (logo + wordmark in one image) → `replacesTitle: true` — Starlight hides the text title and shows just the logo.
+- **No** (just a mark/icon, no text) → `replacesTitle: false` — Starlight shows the mark beside the text title.
+
+Then write the config:
+
+```js
+// Single mark
+logo: {
+  src: './src/assets/logo.svg',
+  replacesTitle: false,
+}
+
+// Light/dark pair
+logo: {
+  light: './src/assets/logo-light.svg',
+  dark: './src/assets/logo-dark.svg',
+  replacesTitle: true,
+}
+```
+
+If a `logo:` block already exists in the config, edit it in place — don't add a duplicate. If `logo:` is in a comment or commented-out, uncomment and update.
+
+**b) Splash hero image — `src/content/docs/index.mdx` `hero.image.file`**
+
+Default Starlight splash hero supports a separate (usually larger) image. Check the existing `index.mdx` frontmatter:
+
+```yaml
+hero:
+  image:
+    file: ../../assets/hero-mark.png
+    alt: <project name>
+```
+
+If a hero candidate was identified in Phase 6, update this path. If the same logo serves both roles, point both at the same file. If the user wants to use the branded `<Hero>` MDX component (richer than the frontmatter hero), point them at the migration guide section that covers it.
+
+**Verify after writing:**
+
+After both surfaces are updated, encourage the user to run `bun dev` and visually confirm the logo renders correctly in both light and dark modes (toggle from the topbar). Common issues:
+- Logo is white-on-white in light mode → need a dark variant or use the `light`/`dark` pair pattern
+- Logo is way too small/large → adjust the source dimensions or add CSS overrides via `customCss`
+- File path is wrong → relative paths in `astro.config.mjs` are relative to the project root, not the file itself
 
 ### Phase 10 — Write configs
 
