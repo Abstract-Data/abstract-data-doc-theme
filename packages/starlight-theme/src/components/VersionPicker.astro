@@ -2,46 +2,52 @@
 /**
  * <VersionPicker /> — dropdown for navigating between API doc versions.
  *
- * The component reads two pieces of information at render time:
+ * Two ways to use it:
  *
- *   1. A `versions` array passed in as a prop (canonical list of available
- *      versions for this site, with their slug paths and labels).
- *   2. The current page's URL (via `Astro.url.pathname`), which tells us
- *      which version we're on and which page within that version.
- *
- * On change, it navigates to the equivalent page in the chosen version
- * (same module, different version subdirectory). If the equivalent page
- * doesn't exist (the symbol was added later or removed), the picker falls
- * back to the version's API root.
- *
- * Usage in `astro.config.mjs` overrides:
- *
- *   starlight({
- *     components: {
- *       SocialIcons: './src/overrides/SocialIcons.astro',
- *     },
- *   })
- *
- * Then in `src/overrides/SocialIcons.astro`:
+ * (a) Auto-discover (recommended). Pass no `versions` prop:
  *
  *   ---
- *   import Default from '@astrojs/starlight/components/SocialIcons.astro';
  *   import VersionPicker from '@abstractdata/starlight-theme/components/VersionPicker.astro';
+ *   ---
+ *   <VersionPicker apiBase="/api" />
  *
+ * The component walks `getCollection('docs')` at build time, picks up
+ * every page that has a `version:` frontmatter field (set by the autodoc
+ * orchestrators on per-version pages), and dedupes by tag. The default
+ * version is detected via `versionDefault: true` on those same pages.
+ * No duplication: the autodoc JSON config is the canonical source.
+ *
+ * (b) Manual list. Pass an explicit `versions` array if you want to
+ * curate the dropdown — e.g. hide pre-release tags, reorder, override
+ * labels:
+ *
+ *   ---
  *   const versions = [
  *     { tag: 'v0.4.0', label: '0.4 (latest)', default: true },
  *     { tag: 'v0.3.0', label: '0.3' },
- *     { tag: 'v0.2.0', label: '0.2 (legacy)' },
  *   ];
- *   const apiBase = '/api';
  *   ---
- *   <VersionPicker {versions} {apiBase} />
- *   <Default />
+ *   <VersionPicker {versions} apiBase="/api" />
  *
- * Pass `apiBase` to match your `outputDir` (default `/api`). The component
- * is small, dependency-free Astro + a few lines of vanilla JS — no React,
- * no hydration cost beyond what Starlight already loads.
+ * On change the component navigates to the equivalent page in the chosen
+ * version (same module, different version subdirectory). If the equivalent
+ * page doesn't exist (the symbol was added later or removed) it falls back
+ * to the version's API root.
+ *
+ * Schema requirement for auto-discovery: your `src/content.config.ts`
+ * must accept these optional fields (the create-docs template already
+ * does):
+ *
+ *   docsSchema({
+ *     extend: z.object({
+ *       version: z.string().optional(),
+ *       versionLabel: z.string().optional(),
+ *       versionDefault: z.boolean().optional(),
+ *     }),
+ *   })
  */
+import { getCollection } from 'astro:content';
+
 interface Version {
   /** Git tag (used as the URL segment after the safeTag transform: `v0.3.0` → `0.3.0`). */
   tag: string;
@@ -52,22 +58,77 @@ interface Version {
 }
 
 interface Props {
-  /** Canonical list of versions for this site. */
-  versions: Version[];
+  /** Optional: override the auto-discovered list. Omit to use frontmatter-based discovery. */
+  versions?: Version[];
   /** Base URL of the API reference (default `/api`). Match `outputDir` in autodoc config. */
   apiBase?: string;
 }
 
-const { versions, apiBase = '/api' } = Astro.props;
+const { versions: propVersions, apiBase = '/api' } = Astro.props;
 const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
 
 // Match `safeTag()` in the autodoc scripts: strip leading `v`, then
-// replace any non-`[A-Za-z0-9._-]` with `-`.
+// replace dots and any other non-alphanumeric chars with `-`. Dots get
+// stripped by Astro's URL slug normalizer (`0.1.0` → `010`) so we use
+// dashes from the start to keep filesystem and URL byte-identical.
 function safeTag(tag: string): string {
-  return tag.replace(/^v/, '').replace(/[^a-zA-Z0-9._-]/g, '-');
+  return tag.replace(/^v/, '').replace(/[^a-zA-Z0-9_-]/g, '-');
 }
 
-// Detect current version from the URL. Path looks like:
+// ─── Resolve the version list ─────────────────────────────────────────
+//
+// 1. Caller passed `versions` prop → use as-is.
+// 2. Otherwise, walk the docs collection looking for `version:` frontmatter
+//    fields written by the autodoc orchestrators. Dedupe, sort, mark default.
+// 3. If nothing turns up, leave `versions` empty and the component renders
+//    nothing (the `{currentTag &&` guard below short-circuits).
+let versions: Version[] = propVersions ?? [];
+if (!propVersions || propVersions.length === 0) {
+  try {
+    const all = await getCollection('docs');
+    const seen = new Map<string, Version>();
+    for (const entry of all) {
+      const data = entry.data as {
+        version?: string;
+        versionLabel?: string;
+        versionDefault?: boolean;
+      };
+      if (!data.version) continue;
+      const existing = seen.get(data.version);
+      // First occurrence wins for the tag/label; if any page in this
+      // version sets `versionDefault`, treat the version as default.
+      if (!existing) {
+        seen.set(data.version, {
+          tag: data.version,
+          label: data.versionLabel ?? data.version,
+          default: !!data.versionDefault,
+        });
+      } else if (data.versionDefault && !existing.default) {
+        existing.default = true;
+      }
+    }
+    versions = [...seen.values()];
+
+    // Sort: default first, then descending semver-ish. `localeCompare`
+    // with `numeric: true` handles `0.4.0` vs `0.10.0` correctly.
+    versions.sort((a, b) => {
+      if (a.default !== b.default) return a.default ? -1 : 1;
+      return b.tag.localeCompare(a.tag, 'en', { numeric: true });
+    });
+
+    // Fallback: if nothing was marked default, promote the first sorted
+    // entry. The autodoc orchestrators always emit `versionDefault: true`,
+    // so this only triggers if the user wired versions some other way.
+    if (versions.length > 0 && !versions.some((v) => v.default)) {
+      versions[0].default = true;
+    }
+  } catch {
+    // No `docs` collection or no version frontmatter — render nothing.
+    versions = [];
+  }
+}
+
+// ─── Detect current version from URL ──────────────────────────────────
 //   /api/0.3.0/auditkit_config/  → current = "0.3.0"
 //   /api/auditkit_config/        → current = default
 const path = Astro.url.pathname.replace(base, '');
@@ -82,7 +143,6 @@ if (path.startsWith(apiPrefix)) {
     currentTag = matched.tag;
     currentPage = remainder.join('/');
   } else {
-    // We're on the un-versioned (default) build
     const def = versions.find((v) => v.default);
     if (def) {
       currentTag = def.tag;
@@ -92,7 +152,7 @@ if (path.startsWith(apiPrefix)) {
 }
 ---
 
-{currentTag && (
+{currentTag && versions.length > 1 && (
   <starlight-version-picker class="ad-version-picker" data-api-base={apiBase} data-current-page={currentPage ?? ''} data-base={base}>
     <label>
       <span class="sr-only">API version</span>

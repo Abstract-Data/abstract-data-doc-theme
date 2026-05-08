@@ -424,33 +424,34 @@ b. Write the `versions` array into the appropriate autodoc JSON config. Example 
 }
 ```
 
-c. Wire a `<VersionPicker>` override so the topbar gets a dropdown. Create `src/overrides/SocialIcons.astro`:
+c. **No override needed.** The `abstractData()` plugin already overrides `SocialIcons` to render `<VersionPicker>` next to the existing chip and social links. As soon as the autodoc orchestrator emits per-version pages with `version:` frontmatter, the picker appears in the topbar automatically — no user-side wiring, no `versions` prop to maintain. The picker walks the docs collection at build time, dedupes by tag, picks up the `versionDefault: true` flag for the default version. The autodoc JSON is the single source of truth.
 
-```astro
----
-import Default from '@astrojs/starlight/components/SocialIcons.astro';
-import VersionPicker from '@abstractdata/starlight-theme/components/VersionPicker.astro';
-const versions = [
-  { tag: 'v0.4.0', label: '0.4 (latest)', default: true },
-  { tag: 'v0.3.2', label: '0.3' },
-  { tag: 'v0.2.0', label: '0.2 (legacy)' },
-];
----
-<VersionPicker {versions} apiBase="/api" />
-<Default />
-```
-
-then register in `astro.config.mjs`:
+If the autodoc base path differs from the default `/api` (e.g. `outputDir: "src/content/docs/api/ts"` for TypeScript-only sites), pass `apiBase` to the plugin so the picker constructs the right URLs:
 
 ```js
 starlight({
-  components: { SocialIcons: './src/overrides/SocialIcons.astro' },
+  plugins: [
+    abstractData({
+      motion: 'calm',
+      apiBase: '/api/ts',
+    }),
+  ],
 })
 ```
 
-d. **Verify the `versions` array stays in sync with the override list.** They duplicate the canonical source until the theme adds a route-data middleware that exposes the autodoc config to components automatically (out of scope for this round). When in doubt, edit the JSON first and ask the user to rerun this phase to regenerate the override.
+d. **Verify the docs project's content schema accepts the version frontmatter fields.** Read `src/content.config.ts` and confirm the `docsSchema.extend` zod object includes:
+
+```ts
+version: z.string().optional(),
+versionLabel: z.string().optional(),
+versionDefault: z.boolean().optional(),
+```
+
+The `create-docs` template scaffold already ships with these. For projects upgraded via `bunx abstract-data-install-skills`, you'll need to add them — without these optional fields, Zod will reject the autodoc-emitted frontmatter and the build fails with `InvalidContentEntryDataError`.
 
 e. Tell the user to run `bun run docs:python` (or `docs:ts`) to populate the per-version directories. The script handles the worktrees automatically.
+
+f. **Optional curated override.** If the user wants to hide pre-release tags or reorder the dropdown, they can wire a user-level override of `SocialIcons` that imports `<VersionPicker>` and passes an explicit `versions` prop — that bypasses auto-discovery. Don't recommend this by default; auto-discovery keeps the autodoc JSON as the single source of truth.
 
 If the user picks option 2 (`starlight-versions`):
 

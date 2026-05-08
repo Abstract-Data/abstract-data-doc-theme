@@ -49,38 +49,55 @@ The autodoc orchestrator (`build-python-docs.mjs` / `build-ts-docs.mjs`) accepts
 
 **Build** — `bun run docs:python` checks out each tag, regenerates, cleans up worktrees on exit.
 
-**Add the version picker** — override `SocialIcons` in `astro.config.mjs`:
+**The version picker is automatic.** As soon as the autodoc orchestrator emits per-version pages with `version:` frontmatter, the bundled `<VersionPicker>` appears in the topbar — no override file, no `versions` prop, no manual list. The picker walks the docs collection at build time, dedupes by tag, marks the default via `versionDefault: true`, and renders nothing when fewer than two versions exist.
+
+If your autodoc base path differs from the default (e.g. you set `outputDir` to `src/content/docs/api/ts` instead of `src/content/docs/api`), pass `apiBase` to the plugin so the picker constructs the right URLs:
 
 ```js
 starlight({
-  components: { SocialIcons: './src/overrides/SocialIcons.astro' },
+  plugins: [
+    abstractData({
+      motion: 'calm',
+      apiBase: '/api/ts', // matches outputDir minus 'src/content/docs/'
+    }),
+  ],
 })
 ```
 
-`src/overrides/SocialIcons.astro`:
-
-```astro
----
-import Default from '@astrojs/starlight/components/SocialIcons.astro';
-import VersionPicker from '@abstractdata/starlight-theme/components/VersionPicker.astro';
-
-const versions = [
-  { tag: 'v0.4.0', label: '0.4 (latest)', default: true },
-  { tag: 'v0.3.2', label: '0.3' },
-  { tag: 'v0.2.0', label: '0.2 (legacy)' },
-];
----
-<VersionPicker {versions} apiBase="/api" />
-<Default />
-```
-
-That's it. The picker appears in the topbar, dropdown lists every version, switching navigates to the equivalent page in the chosen version.
+> If you'd rather curate the dropdown manually (hide pre-release tags, override labels, reorder), wire your own override of `SocialIcons` and pass an explicit `versions` array — that bypasses auto-discovery. Most projects don't need this.
 
 **Sidebar autogenerate handles the rest** — `{ label: 'API Reference', autogenerate: { directory: 'api' } }` already groups by subdirectory, so each version becomes an expandable group.
 
+### Schema requirement
+
+Auto-discovery requires your `src/content.config.ts` to accept the version frontmatter fields. The `create-docs` template already includes them; if you're migrating an older project, add to your `docsSchema.extend`:
+
+```ts
+import { defineCollection, z } from 'astro:content';
+import { docsLoader } from '@astrojs/starlight/loaders';
+import { docsSchema } from '@astrojs/starlight/schema';
+
+export const collections = {
+  docs: defineCollection({
+    loader: docsLoader(),
+    schema: docsSchema({
+      extend: z.object({
+        // … your other fields …
+
+        // Theme-managed (autodoc orchestrators write these):
+        version: z.string().optional(),
+        versionLabel: z.string().optional(),
+        versionDefault: z.boolean().optional(),
+      }),
+    }),
+  }),
+};
+```
+
+Without these fields Zod will reject any frontmatter the autodoc orchestrator emits and your build fails with `InvalidContentEntryDataError`.
+
 ### Caveats
 
-- The `versions` array in the autodoc config and the override component are duplicated until the theme adds a route-data middleware that auto-derives the list. Edit the JSON first; rerun the setup skill if needed.
 - Pages on older versions can outlive their slugs. If a symbol moved (`auditkit.foo` → `auditkit.bar`), the version picker can't auto-resolve — it'll land at the version's index page.
 - TypeScript versioning works the same way but TypeDoc's output structure is different (subdirectories per kind: `classes/`, `functions/`, `interfaces/`). The picker still works; just expect the per-version trees to vary in shape if exports moved between releases.
 

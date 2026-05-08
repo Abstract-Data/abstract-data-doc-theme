@@ -115,11 +115,16 @@ if (versions) {
   log(`${c.dim}→ relative searchPath: ${SEARCH_PATH_REL || '(repo root)'}${c.reset}`);
 }
 
-// Make a tag filesystem-safe for use as a directory name. Astro/Starlight
-// route slugs allow dots, but we strip the leading `v` for prettier URLs
-// (so `v0.3.0` → `0.3.0`) and keep dots as-is.
+// Make a tag filesystem-safe for use as a directory name. We have to be
+// strict here: Astro's slug normalizer strips dots from URL segments
+// (`0.1.0` → `010`), so if our directory names contain dots the URL the
+// VersionPicker constructs won't match the rendered URL. Convert dots
+// to dashes (and any other non-alphanumeric to dashes) so the directory
+// name AND the URL slug Astro generates from it stay byte-identical.
+//   v0.3.0 → 0-3-0
+//   v1.0.0-rc.1 → 1-0-0-rc-1
 function safeTag(tag) {
-  return tag.replace(/^v/, '').replace(/[^a-zA-Z0-9._-]/g, '-');
+  return tag.replace(/^v/, '').replace(/[^a-zA-Z0-9_-]/g, '-');
 }
 
 // ─── Per-build pipeline (one invocation per version, or one total) ─────
@@ -177,8 +182,12 @@ function buildOnce({ searchPath, version }) {
 
     const fmLines = ['---', `title: ${title}`, `description: "${description}"`];
     if (version) {
+      // Emit version metadata. `versionDefault: true` lets the bundled
+      // <VersionPicker> auto-discover which version to pre-select without
+      // duplicating the canonical list outside the autodoc JSON config.
       fmLines.push(`version: "${version.tag}"`);
       if (version.label) fmLines.push(`versionLabel: "${version.label}"`);
+      if (version.default) fmLines.push(`versionDefault: true`);
     }
     fmLines.push('---', '');
     const frontmatter = fmLines.join('\n');
