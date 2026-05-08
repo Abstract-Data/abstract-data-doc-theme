@@ -49,11 +49,11 @@
     "@fontsource-variable/orbitron": "^5.0.0"
   },
   "peerDependencies": {
-    "@astrojs/starlight": ">=0.32.0",
-    "astro": ">=5.0.0"
+    "@astrojs/starlight": ">=0.34.0 <0.38.0",
+    "astro": ">=5.0.0 <6.0.0"
   },
   "devDependencies": {
-    "@astrojs/starlight": "^0.34.0",
+    "@astrojs/starlight": "~0.37.0",
     "astro": "^5.10.0",
     "typescript": "^5.6.0"
   }

@@ -29,6 +29,7 @@ A theming + DX release focused on the rough edges that show up after consumers s
 
 - **Sandbox CI: pin Bun to 1.1.45.** Workflow files now use `bun-version: 1.1.45` instead of `latest`. Matches `packageManager` in root `package.json` (1.1.45 is the minimum version with text-lockfile support).
 - **`bun.lock` workspace versions resynced** to match each workspace's actual `package.json` (`@abstractdata/create-docs` 0.3.0, `@abstractdata/starlight-theme` 0.4.0).
+- **Pin Starlight version range.** `peerDependencies` now requires `@astrojs/starlight >=0.34.0 <0.38.0` and `astro >=5.0.0 <6.0.0`. Starlight 0.38 (Mar 2026) dropped Astro v5 and required v6, but the wider plugin ecosystem (notably `starlight-links-validator`) hadn't caught up to Astro v6's `astro/zod` API changes at the time of this release. Pinning the upper bound prevents `bun install` on a fresh project from picking up an incompatible matrix. Will widen to `^0.38.0` + Astro v6 once `starlight-links-validator` ships an Astro-v6 build.
 
 ## [0.3.2](https://github.com/Abstract-Data/abstract-data-doc-theme/compare/starlight-theme-v0.3.1...starlight-theme-v0.3.2) (2026-05-07)
 

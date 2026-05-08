@@ -9,7 +9,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@abstractdata/starlight-theme": "packages/starlight-theme",
-        "@astrojs/starlight": "^0.34.0",
+        "@astrojs/starlight": "~0.37.0",
         "astro": "^5.10.0",
         "sharp": "^0.33.5",
       },
@@ -31,13 +31,13 @@
         "@fontsource-variable/orbitron": "^5.0.0",
       },
       "devDependencies": {
-        "@astrojs/starlight": "^0.34.0",
+        "@astrojs/starlight": "~0.37.0",
         "astro": "^5.10.0",
         "typescript": "^5.6.0",
       },
       "peerDependencies": {
-        "@astrojs/starlight": ">=0.32.0",
-        "astro": ">=5.0.0",
+        "@astrojs/starlight": ">=0.34.0 <0.38.0",
+        "astro": ">=5.0.0 <6.0.0",
       },
     },
     "packages/template": {
@@ -45,7 +45,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@abstractdata/starlight-theme": "packages/starlight-theme",
-        "@astrojs/starlight": "^0.34.0",
+        "@astrojs/starlight": "~0.37.0",
         "astro": "^5.10.0",
         "sharp": "^0.33.5",
         "starlight-links-validator": "^0.16.0",
@@ -56,13 +56,13 @@
     },
   },
   "packages": {
-    "@abstract-data/playground": ["@abstract-data/playground@workspace:apps/playground", { "dependencies": { "@abstractdata/starlight-theme": "packages/starlight-theme", "@astrojs/starlight": "^0.34.0", "astro": "^5.10.0", "sharp": "^0.33.5" }, "devDependencies": { "@astrojs/check": "^0.9.0", "typescript": "^5.6.0" } }],
+    "@abstract-data/playground": ["@abstract-data/playground@workspace:apps/playground", { "dependencies": { "@abstractdata/starlight-theme": "packages/starlight-theme", "@astrojs/starlight": "~0.37.0", "astro": "^5.10.0", "sharp": "^0.33.5" }, "devDependencies": { "@astrojs/check": "^0.9.0", "typescript": "^5.6.0" } }],
 
     "@abstractdata/create-docs": ["@abstractdata/create-docs@workspace:packages/create-docs", { "bin": { "create-abstractdata-docs": "./bin/cli.js" } }],
 
-    "@abstractdata/docs-template": ["@abstractdata/docs-template@workspace:packages/template", { "dependencies": { "@abstractdata/starlight-theme": "packages/starlight-theme", "@astrojs/starlight": "^0.34.0", "astro": "^5.10.0", "sharp": "^0.33.5", "starlight-links-validator": "^0.16.0" }, "devDependencies": { "typescript": "^5.6.0" } }],
+    "@abstractdata/docs-template": ["@abstractdata/docs-template@workspace:packages/template", { "dependencies": { "@abstractdata/starlight-theme": "packages/starlight-theme", "@astrojs/starlight": "~0.37.0", "astro": "^5.10.0", "sharp": "^0.33.5", "starlight-links-validator": "^0.16.0" }, "devDependencies": { "typescript": "^5.6.0" } }],
 
-    "@abstractdata/starlight-theme": ["@abstractdata/starlight-theme@workspace:packages/starlight-theme", { "dependencies": { "@fontsource-variable/inter": "^5.0.0", "@fontsource-variable/jetbrains-mono": "^5.0.0", "@fontsource-variable/orbitron": "^5.0.0" }, "devDependencies": { "@astrojs/starlight": "^0.34.0", "astro": "^5.10.0", "typescript": "^5.6.0" }, "peerDependencies": { "@astrojs/starlight": ">=0.32.0", "astro": ">=5.0.0" }, "bin": { "abstract-data-install-skills": "./bin/install-skills.js" } }],
+    "@abstractdata/starlight-theme": ["@abstractdata/starlight-theme@workspace:packages/starlight-theme", { "dependencies": { "@fontsource-variable/inter": "^5.0.0", "@fontsource-variable/jetbrains-mono": "^5.0.0", "@fontsource-variable/orbitron": "^5.0.0" }, "devDependencies": { "@astrojs/starlight": "~0.37.0", "astro": "^5.10.0", "typescript": "^5.6.0" }, "peerDependencies": { "@astrojs/starlight": ">=0.34.0 <0.38.0", "astro": ">=5.0.0 <6.0.0" }, "bin": { "abstract-data-install-skills": "./bin/install-skills.js" } }],
 
     "@astrojs/check": ["@astrojs/check@0.9.9", "", { "dependencies": { "@astrojs/language-server": "^2.16.7", "chokidar": "^4.0.3", "kleur": "^4.1.5", "yargs": "^17.7.2" }, "peerDependencies": { "typescript": "^5.0.0 || ^6.0.0" }, "bin": { "astro-check": "bin/astro-check.js" } }, "sha512-A5UW8uIuErLWEoRQvzgXpO1gTjUFtK8r7nU2Z7GewAMxUb7bPvpk11qaKKgxqXlHJWlAvaaxy+Xg28A6bmQ1Tg=="],
 
@@ -80,7 +80,7 @@
 
     "@astrojs/sitemap": ["@astrojs/sitemap@3.7.2", "", { "dependencies": { "sitemap": "^9.0.0", "stream-replace-string": "^2.0.0", "zod": "^4.3.6" } }, "sha512-PqkzkcZTb5ICiyIR8VoKbIAP/laNRXi5tw616N1Ckk+40oNB8Can1AzVV56lrbC5GKSZFCyJYUVYqVivMisvpA=="],
 
-    "@astrojs/starlight": ["@astrojs/starlight@0.34.8", "", { "dependencies": { "@astrojs/markdown-remark": "^6.3.1", "@astrojs/mdx": "^4.2.3", "@astrojs/sitemap": "^3.3.0", "@pagefind/default-ui": "^1.3.0", "@types/hast": "^3.0.4", "@types/js-yaml": "^4.0.9", "@types/mdast": "^4.0.4", "astro-expressive-code": "^0.41.1", "bcp-47": "^2.1.0", "hast-util-from-html": "^2.0.1", "hast-util-select": "^6.0.2", "hast-util-to-string": "^3.0.0", "hastscript": "^9.0.0", "i18next": "^23.11.5", "js-yaml": "^4.1.0", "klona": "^2.0.6", "mdast-util-directive": "^3.0.0", "mdast-util-to-markdown": "^2.1.0", "mdast-util-to-string": "^4.0.0", "pagefind": "^1.3.0", "rehype": "^13.0.1", "rehype-format": "^5.0.0", "remark-directive": "^3.0.0", "ultrahtml": "^1.6.0", "unified": "^11.0.5", "unist-util-visit": "^5.0.0", "vfile": "^6.0.2" }, "peerDependencies": { "astro": "^5.5.0" } }, "sha512-XuYz0TfCZhje2u1Q9FNtmTdm7/B9QP91RDI1VkPgYvDhSYlME3k8gwgcBMHnR9ASDo2p9gskrqe7t1Pub/qryg=="],
+    "@astrojs/starlight": ["@astrojs/starlight@0.37.7", "", { "dependencies": { "@astrojs/markdown-remark": "^6.3.1", "@astrojs/mdx": "^4.2.3", "@astrojs/sitemap": "^3.3.0", "@pagefind/default-ui": "^1.3.0", "@types/hast": "^3.0.4", "@types/js-yaml": "^4.0.9", "@types/mdast": "^4.0.4", "astro-expressive-code": "^0.41.1", "bcp-47": "^2.1.0", "hast-util-from-html": "^2.0.1", "hast-util-select": "^6.0.2", "hast-util-to-string": "^3.0.0", "hastscript": "^9.0.0", "i18next": "^23.11.5", "js-yaml": "^4.1.0", "klona": "^2.0.6", "magic-string": "^0.30.17", "mdast-util-directive": "^3.0.0", "mdast-util-to-markdown": "^2.1.0", "mdast-util-to-string": "^4.0.0", "pagefind": "^1.3.0", "rehype": "^13.0.1", "rehype-format": "^5.0.0", "remark-directive": "^3.0.0", "ultrahtml": "^1.6.0", "unified": "^11.0.5", "unist-util-visit": "^5.0.0", "vfile": "^6.0.2" }, "peerDependencies": { "astro": "^5.5.0" } }, "sha512-KyBnou8aKIlPJUSNx6a1SN7XyH22oj/VAvTGC+Edld4Bnei1A//pmCRTBvSrSeoGrdUjK0ErFUfaEhhO1bPfDg=="],
 
     "@astrojs/telemetry": ["@astrojs/telemetry@3.3.0", "", { "dependencies": { "ci-info": "^4.2.0", "debug": "^4.4.0", "dlv": "^1.1.3", "dset": "^3.1.4", "is-docker": "^3.0.0", "is-wsl": "^3.1.0", "which-pm-runs": "^1.1.0" } }, "sha512-UFBgfeldP06qu6khs/yY+q1cDAaArM2/7AEIqQ9Cuvf7B1hNLq0xDrZkct+QoIGyjq56y8IaE2I3CTvG99mlhQ=="],
 

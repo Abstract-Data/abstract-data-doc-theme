@@ -104,6 +104,43 @@ if (pkg.dependencies?.['@abstractdata/starlight-theme']?.startsWith('workspace:'
 
 writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
+// ─── Write .gitignore ─────────────────────────────────────────────────
+// npm strips `.gitignore` from published tarballs, so we ship the contents
+// inline here. If the user (or template) committed one already after copy,
+// don't overwrite — they may have customized it.
+const gitignorePath = join(targetDir, '.gitignore');
+if (!existsSync(gitignorePath)) {
+  log(`${c.dim}→ writing${c.reset} .gitignore`);
+  writeFileSync(
+    gitignorePath,
+    [
+      '# build output',
+      'dist/',
+      '.astro/',
+      '.output/',
+      '',
+      '# dependencies',
+      'node_modules/',
+      '',
+      '# bun — bun.lock IS committed (text-based lockfile, needed for reproducible installs)',
+      '.bun/',
+      '',
+      '# logs',
+      '*.log',
+      'npm-debug.log*',
+      '',
+      '# env',
+      '.env',
+      '.env.local',
+      '',
+      '# os',
+      '.DS_Store',
+      'Thumbs.db',
+      '',
+    ].join('\n'),
+  );
+}
+
 // ─── Patch astro.config.mjs ───────────────────────────────────────────
 const astroConfigPath = join(targetDir, 'astro.config.mjs');
 if (existsSync(astroConfigPath)) {
