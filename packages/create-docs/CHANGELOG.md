@@ -4,6 +4,13 @@ All notable changes to `@abstractdata/create-docs` are documented here. The form
 
 This file is maintained by [release-please](https://github.com/googleapis/release-please) going forward — do not hand-edit beyond bootstrapping.
 
+## [0.2.1](https://github.com/Abstract-Data/abstract-data-doc-theme/compare/create-docs-v0.2.0...create-docs-v0.2.1) (2026-05-08)
+
+
+### Features
+
+* **docs:** add source-driven versioned API reference docs ([#17](https://github.com/Abstract-Data/abstract-data-doc-theme/issues/17)) ([76312f0](https://github.com/Abstract-Data/abstract-data-doc-theme/commit/76312f0ff8f9478538e231ed18d5fac70b835361))
+
 ## 0.3.0 (2026-05-07)
 
 Scaffold-shape changes — projects created on `0.3.0` ship a richer baseline. No CLI flag changes.
