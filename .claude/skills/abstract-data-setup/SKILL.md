@@ -196,14 +196,38 @@ Don't auto-configure. Tell the user the recipe and let them follow up:
 
 If the user says yes to any of these, fall back to free-form work — these aren't covered by the main config files.
 
-### Phase 8 — Gather brand configuration
+### Phase 7.5 — Optional Starlight plugins
 
-Read existing `astro.config.mjs`. If `motion`, `credit`, and `version` are already set and the user hasn't asked to change them, skip this phase.
+Three plugins are cheap, high-value DX wins for most docs sites. Don't auto-install — surface them as an interactive multi-select prompt with sensible per-project defaults. Skip the prompt entirely if the user has already declined them in a previous run (look for a `.abstractdata-setup.json` marker or for the plugins already being absent + the import already pruned).
+
+For each, you decide the default based on signals you've already gathered:
+
+- **`starlight-llms-txt`** — emits an `llms.txt` summary at `/llms.txt` (per [llmstxt.org](https://llmstxt.org)) so AI crawlers can ingest the site as plain Markdown rather than parsing rendered HTML. **Default: ON.** No real downside.
+- **`@expressive-code/plugin-package-managers`** *(code-block plugin, not a Starlight plugin)* — auto-renders npm/pnpm/yarn/bun tabs from a single `npm install foo` code block. **Default: ON if** the README, quickstart, or any docs page contains `bun add`, `npm install`, `pnpm add`, or `yarn add`. **Default: OFF otherwise.**
+- **`starlight-image-zoom`** — click-to-zoom on images. **Default: ON if** the docs project has more than ~5 images under `src/assets/` or `src/content/docs/**/*.{png,jpg,svg,webp}` (a heuristic for "this site uses screenshots"). **Default: OFF otherwise.**
+
+Show the user the three options with their suggested defaults pre-checked, and let them un-check / toggle. For each accepted plugin:
+
+1. Add to `dependencies` in `package.json`.
+2. Add the import to `astro.config.mjs`.
+3. Wire the plugin entry into the `plugins` array (or `expressiveCode.plugins` for the package-managers plugin).
+4. Tell the user the bun command to run: `bun add <plugin-name>`.
+
+Show the resulting diff before writing. Don't run `bun add` yourself — the user does it.
+
+### Phase 8 — Gather brand + contributor-loop configuration
+
+Read existing `astro.config.mjs`. If `motion`, `credit`, `version`, `lastUpdated`, and `editLink` are already set and the user hasn't asked to change them, skip this phase.
 
 Otherwise, batch into one prompt:
+
 1. Motion: full | calm (Recommended)
 2. Credit: auto | hide
 3. Version chip: show with version string | omit
+4. **Last-updated timestamps** (Recommended on): renders a "Last updated" footer on each page using `git log`. Requires a git checkout at build time. Set `lastUpdated: true` if yes, omit otherwise.
+5. **"Edit on GitHub" link** (Recommended on for OSS): renders an Edit link in the footer pointing at the source. Needs a repo URL — derive it from `package.json` `repository.url` or the source-project remote (`git remote get-url origin`). If found, write `editLink: { baseUrl: '<repo>/edit/<default-branch>/' }`; if not, leave the commented-out scaffold in place and tell the user how to fill it in.
+
+Both items 4 and 5 are cheap, high-impact contributor-loop wins per the Astro/Starlight best-practices guide — default to enabling them unless the user opts out.
 
 ### Phase 9 — Configure logo
 
@@ -211,7 +235,15 @@ Two surfaces need updating:
 
 **a) Topbar logo — `astro.config.mjs` `starlight.logo`**
 
-Ask the user one final question if not already known: does this logo image include the project name as text/wordmark?
+First, look at what Phase 6 detected. Three branches:
+
+1. **Phase 6 found a light/dark pair** (e.g. `logo-light.svg` + `logo-dark.svg`) → use the `{ light, dark }` form. Starlight auto-switches based on `data-theme`. Don't ask which to use as the default — both render at the right time.
+
+2. **Phase 6 found a single mark** → use the single-`src` form. Optionally suggest the user create a dark variant later if the mark is colored in a way that won't survive a dark background.
+
+3. **Phase 6 found nothing** → leave the existing commented `// logo: { ... }` block in `astro.config.mjs` and tell the user where to drop a logo file.
+
+Then ask one final question (skip if you already know): does the logo include the project name as text/wordmark?
 
 - **Yes** (logo + wordmark in one image) → `replacesTitle: true` — Starlight hides the text title and shows just the logo.
 - **No** (just a mark/icon, no text) → `replacesTitle: false` — Starlight shows the mark beside the text title.
@@ -225,7 +257,7 @@ logo: {
   replacesTitle: false,
 }
 
-// Light/dark pair
+// Light/dark pair (preferred when Phase 6 found both files)
 logo: {
   light: './src/assets/logo-light.svg',
   dark: './src/assets/logo-dark.svg',
@@ -385,6 +417,24 @@ Fires only if Phase 4a (Python) or Phase 5a (TypeScript) found modules below the
 - **`tsdoc-coverage` package** (if the user prefers a dedicated tool): npm install `tsdoc-coverage` as a dev dep and wire it as the hook entry instead. Threshold defaults to 80% to match the Python side.
 
 In both stacks: show the user the exact config diff before writing. The pre-commit hook lives in the **source repo**, not the docs repo — extra caution since it's a different project.
+
+### Phase 12.5 — Confirm `starlight-links-validator` is wired
+
+The template ships with `starlight-links-validator` already installed and registered as a Starlight plugin. Verify both during this phase:
+
+1. Read the docs project's `package.json` — confirm `starlight-links-validator` is in `dependencies` (or `devDependencies`).
+2. Read `astro.config.mjs` — confirm the plugin is referenced inside `plugins: [...]` on the `starlight(...)` call.
+3. Read the docs project's CI workflow (`.github/workflows/*.yml` or equivalent) — confirm `bun run build` (or `astro build`) runs on PRs. The links validator runs as part of the build, so a build-on-PR workflow is enough; no separate step needed.
+
+If any of those three pieces are missing, surface the gap and offer to add it. The plugin's failure mode is "fail the build on any broken internal link" — exactly what you want for CI.
+
+For migrating projects (running `bunx abstract-data-install-skills` rather than scaffolding via `bun create @abstractdata/docs`), the plugin will not be installed automatically. Tell the user:
+
+```bash
+bun add starlight-links-validator
+```
+
+then add `starlightLinksValidator()` to the `plugins` array in `astro.config.mjs`. Show the diff.
 
 ### Phase 13 — Summary
 

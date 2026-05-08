@@ -16,6 +16,17 @@ export default defineConfig({
         src: './src/assets/abstract-data-logo.png',
         replacesTitle: false,
       },
+      // We ship a custom `src/pages/404.astro` (Glitch centerpiece +
+      // ghost button); opting out of Starlight's built-in route prevents
+      // duplicate rendering.
+      disable404Route: true,
+      // Pull "Last updated" timestamps from git (only meaningful in CI
+      // where the full history is fetched).
+      lastUpdated: true,
+      editLink: {
+        baseUrl:
+          'https://github.com/Abstract-Data/abstract-data-doc-theme/edit/main/apps/playground/',
+      },
       // Branded code-block syntax. Set explicitly here to win over the
       // plugin's default — this is the recommended pattern for theme consumers.
       expressiveCode: {

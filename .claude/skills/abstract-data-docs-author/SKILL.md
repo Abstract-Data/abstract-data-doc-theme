@@ -239,6 +239,44 @@ For pages that document a single class or function (rare with pydoc-markdown's p
 [1-line outcome: "After this, `auth.refresh_token` is set and persisted via `write_config_safely`."]
 ```
 
+## Where dynamic `<head>` / metadata belongs
+
+If during the Phase 5 narrative-page work you find yourself wanting to inject something dynamic into `<head>` — JSON-LD structured data (`Article`, `BreadcrumbList`, `SoftwareSourceCode`), per-page Open Graph image URLs, breadcrumb meta tags, or any computed-from-frontmatter `<meta>` tag — **the right layer is route middleware, not a component override.**
+
+Starlight ≥ 0.32 lets you mutate `Astro.locals.starlightRoute.head` from a function exported by a file referenced as `routeMiddleware:` in `astro.config.mjs`. This is much cleaner than overriding the `<Head>` component because it composes with other plugins, doesn't break when Starlight bumps versions, and lets you read the current page's frontmatter before deciding what to inject.
+
+Sketch:
+
+```ts
+// src/routeData.ts
+import { defineRouteMiddleware } from '@astrojs/starlight/route-data';
+
+export const onRequest = defineRouteMiddleware((context) => {
+  const route = context.locals.starlightRoute;
+  // route.entry.data is the frontmatter; route.headings is the TOC tree.
+  route.head.push({
+    tag: 'script',
+    attrs: { type: 'application/ld+json' },
+    content: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: route.entry.data.title,
+      description: route.entry.data.description,
+    }),
+  });
+});
+```
+
+```js
+// astro.config.mjs
+starlight({
+  routeMiddleware: './src/routeData.ts',
+  // …
+})
+```
+
+If the user explicitly wants any of these features (JSON-LD, dynamic OG images, breadcrumb meta), point them at this file as the place to wire it. Don't override the `<Head>` component just to inject computed meta — that's an anti-pattern documented in the Starlight migration notes for ≥ 0.33.
+
 ## What this skill does NOT do
 
 - **Doesn't rewrite source code.** That's a different operation. If the user wants to add docstrings to the source, that's `abstract-data-setup`'s Phase 4 territory (audit + suggest enrichment), not this skill's.
