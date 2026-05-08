@@ -4,6 +4,26 @@ All notable changes to `@abstractdata/create-docs` are documented here. The form
 
 This file is maintained by [release-please](https://github.com/googleapis/release-please) going forward — do not hand-edit beyond bootstrapping.
 
+## 0.3.0 (2026-05-07)
+
+Scaffold-shape changes — projects created on `0.3.0` ship a richer baseline. No CLI flag changes.
+
+### Features
+
+- **`starlight-links-validator` baked in.** New scaffolds include the plugin in `dependencies` and registered in `astro.config.mjs` so CI builds fail on broken internal links by default.
+- **`docsSchema({ extend })` scaffold** in `src/content.config.ts` with example fields (`category`, `audience`, `lastReviewed`) and JSDoc explaining the pattern. Replaces the bare `docsSchema()` from 0.2.x.
+- **Contributor-loop config in `astro.config.mjs`.** `lastUpdated: true` enabled by default; commented `editLink: { baseUrl: '...' }` scaffold ready to uncomment once the user's repo URL is final.
+- **Per-stack quickstart.** `src/content/docs/quickstart.md` ships with both Python and TypeScript autodoc subsections wrapped in HTML comment markers; the `abstract-data-setup` skill prunes the irrelevant block based on detected stacks.
+- **Bundled TypeScript autodoc orchestrator.** `scripts/build-ts-docs.mjs` and `scripts/ts-autodoc.json` ship in the template so TypeScript projects can wire `bun run docs:ts` immediately.
+- **Versioned API reference support.** Both autodoc orchestrators accept a `versions: [{ tag, label, default }]` array. When set, each tag is checked out via `git worktree` and the API reference is regenerated per tag into `<outputDir>/<safeTag>/`. The default version is also aliased at the un-versioned URL.
+- **`<VersionPicker>` component** importable from `@abstractdata/starlight-theme/components/VersionPicker.astro` for topbar version-switching.
+- **`abstract-data-docs-author` skill** (companion to `abstract-data-setup`) ships in all three tool formats. Reads source code and writes narrative prose to enrich auto-generated API pages.
+- **THEME_VERSION pinning.** The CLI now pins `@abstractdata/starlight-theme` to `^0.4.0` (auto-synced via `scripts/sync-theme-version.mjs` during `prepack`).
+
+### Bug Fixes
+
+- **Workflows pinned to `bun-version: 1.1.45`** to match `packageManager` in root `package.json` (1.1.45 is the minimum version with text-lockfile support; previously CI ran whatever `bun-version: latest` resolved to and `--frozen-lockfile` errored on any drift).
+
 ## 0.2.0
 
 ### Features

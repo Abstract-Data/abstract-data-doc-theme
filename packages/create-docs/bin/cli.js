@@ -21,7 +21,7 @@ import { createInterface } from 'node:readline/promises';
 // Auto-updated by `scripts/sync-theme-version.mjs` during the prepack
 // step — DO NOT hand-edit. Reflects the version in
 // `packages/starlight-theme/package.json` at publish time.
-const THEME_VERSION = '^0.3.2';
+const THEME_VERSION = '^0.4.0';
 
 // ─── Paths ────────────────────────────────────────────────────────────
 const __dirname = dirname(fileURLToPath(import.meta.url));

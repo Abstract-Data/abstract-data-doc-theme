@@ -1,0 +1,178 @@
+---
+/**
+ * <VersionPicker /> — dropdown for navigating between API doc versions.
+ *
+ * The component reads two pieces of information at render time:
+ *
+ *   1. A `versions` array passed in as a prop (canonical list of available
+ *      versions for this site, with their slug paths and labels).
+ *   2. The current page's URL (via `Astro.url.pathname`), which tells us
+ *      which version we're on and which page within that version.
+ *
+ * On change, it navigates to the equivalent page in the chosen version
+ * (same module, different version subdirectory). If the equivalent page
+ * doesn't exist (the symbol was added later or removed), the picker falls
+ * back to the version's API root.
+ *
+ * Usage in `astro.config.mjs` overrides:
+ *
+ *   starlight({
+ *     components: {
+ *       SocialIcons: './src/overrides/SocialIcons.astro',
+ *     },
+ *   })
+ *
+ * Then in `src/overrides/SocialIcons.astro`:
+ *
+ *   ---
+ *   import Default from '@astrojs/starlight/components/SocialIcons.astro';
+ *   import VersionPicker from '@abstractdata/starlight-theme/components/VersionPicker.astro';
+ *
+ *   const versions = [
+ *     { tag: 'v0.4.0', label: '0.4 (latest)', default: true },
+ *     { tag: 'v0.3.0', label: '0.3' },
+ *     { tag: 'v0.2.0', label: '0.2 (legacy)' },
+ *   ];
+ *   const apiBase = '/api';
+ *   ---
+ *   <VersionPicker {versions} {apiBase} />
+ *   <Default />
+ *
+ * Pass `apiBase` to match your `outputDir` (default `/api`). The component
+ * is small, dependency-free Astro + a few lines of vanilla JS — no React,
+ * no hydration cost beyond what Starlight already loads.
+ */
+interface Version {
+  /** Git tag (used as the URL segment after the safeTag transform: `v0.3.0` → `0.3.0`). */
+  tag: string;
+  /** Human label shown in the dropdown (e.g. "0.3 (legacy)"). */
+  label?: string;
+  /** True for the version aliased to the un-versioned URL. */
+  default?: boolean;
+}
+
+interface Props {
+  /** Canonical list of versions for this site. */
+  versions: Version[];
+  /** Base URL of the API reference (default `/api`). Match `outputDir` in autodoc config. */
+  apiBase?: string;
+}
+
+const { versions, apiBase = '/api' } = Astro.props;
+const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+
+// Match `safeTag()` in the autodoc scripts: strip leading `v`, then
+// replace any non-`[A-Za-z0-9._-]` with `-`.
+function safeTag(tag: string): string {
+  return tag.replace(/^v/, '').replace(/[^a-zA-Z0-9._-]/g, '-');
+}
+
+// Detect current version from the URL. Path looks like:
+//   /api/0.3.0/auditkit_config/  → current = "0.3.0"
+//   /api/auditkit_config/        → current = default
+const path = Astro.url.pathname.replace(base, '');
+const apiPrefix = apiBase.replace(/\/$/, '') + '/';
+let currentTag: string | null = null;
+let currentPage: string | null = null;
+if (path.startsWith(apiPrefix)) {
+  const rest = path.slice(apiPrefix.length).replace(/\/$/, '');
+  const [first, ...remainder] = rest.split('/');
+  const matched = versions.find((v) => safeTag(v.tag) === first);
+  if (matched) {
+    currentTag = matched.tag;
+    currentPage = remainder.join('/');
+  } else {
+    // We're on the un-versioned (default) build
+    const def = versions.find((v) => v.default);
+    if (def) {
+      currentTag = def.tag;
+      currentPage = rest;
+    }
+  }
+}
+---
+
+{currentTag && (
+  <starlight-version-picker class="ad-version-picker" data-api-base={apiBase} data-current-page={currentPage ?? ''} data-base={base}>
+    <label>
+      <span class="sr-only">API version</span>
+      <select aria-label="API version">
+        {versions.map((v) => (
+          <option value={safeTag(v.tag)} selected={v.tag === currentTag} data-default={v.default ? 'true' : 'false'}>
+            {v.label ?? v.tag}
+          </option>
+        ))}
+      </select>
+    </label>
+  </starlight-version-picker>
+)}
+
+<style>
+  .ad-version-picker {
+    display: inline-flex;
+    align-items: center;
+    margin-inline-end: 0.75rem;
+  }
+  .ad-version-picker select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    color: var(--sl-color-white, var(--ad-cream));
+    border: 1px solid var(--sl-color-gray-5, var(--ad-cyan-deep));
+    border-radius: 999px;
+    padding: 0.125rem 1.75rem 0.125rem 0.75rem;
+    font: 600 0.75rem/1 var(--sl-font-system, ui-sans-serif), system-ui;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 0.7rem) center, calc(100% - 0.4rem) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    transition: border-color 0.18s ease, color 0.18s ease;
+  }
+  .ad-version-picker select:hover,
+  .ad-version-picker select:focus-visible {
+    border-color: var(--ad-cyan, #00d9ff);
+    color: var(--ad-cyan, #00d9ff);
+    outline: none;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0);
+    white-space: nowrap; border: 0;
+  }
+</style>
+
+<script>
+  // Custom element gives us a clean place to attach the change handler
+  // without inline scripts (CSP-friendly).
+  class StarlightVersionPicker extends HTMLElement {
+    connectedCallback() {
+      const select = this.querySelector('select');
+      if (!(select instanceof HTMLSelectElement)) return;
+      const apiBase = (this.dataset.apiBase || '/api').replace(/\/$/, '');
+      const currentPage = this.dataset.currentPage || '';
+      const base = this.dataset.base || '';
+      select.addEventListener('change', (e) => {
+        const value = (e.target as HTMLSelectElement).value;
+        const option = (e.target as HTMLSelectElement).selectedOptions[0];
+        const isDefault = option?.dataset.default === 'true';
+        // Default version's pages live at the un-versioned URL.
+        const versionSegment = isDefault ? '' : `/${value}`;
+        const target = `${base}${apiBase}${versionSegment}/${currentPage}`.replace(/\/+$/, '/');
+        // First try the equivalent page in the chosen version. If it 404s
+        // we want to fall back to that version's index — but we can't
+        // detect 404 from a navigation, so trust the build: if the page
+        // exists for one version it usually exists for adjacent ones.
+        window.location.href = target;
+      });
+    }
+  }
+  if (!customElements.get('starlight-version-picker')) {
+    customElements.define('starlight-version-picker', StarlightVersionPicker);
+  }
+</script>

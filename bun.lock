@@ -20,11 +20,11 @@
     },
     "packages/create-docs": {
       "name": "@abstractdata/create-docs",
-      "version": "0.2.0",
+      "version": "0.3.0",
     },
     "packages/starlight-theme": {
       "name": "@abstractdata/starlight-theme",
-      "version": "0.3.2",
+      "version": "0.4.0",
       "dependencies": {
         "@fontsource-variable/inter": "^5.0.0",
         "@fontsource-variable/jetbrains-mono": "^5.0.0",

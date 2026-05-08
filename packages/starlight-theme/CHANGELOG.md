@@ -4,6 +4,32 @@ All notable changes to `@abstractdata/starlight-theme` are documented here. The 
 
 This file is maintained by [release-please](https://github.com/googleapis/release-please) going forward — do not hand-edit beyond bootstrapping.
 
+## 0.4.0 (2026-05-07)
+
+A theming + DX release focused on the rough edges that show up after consumers ship a real client docs site. No breaking API changes; user CSS keeps working but now wins more cleanly.
+
+### Features
+
+- **Cascade layer (`@layer abstract-data`).** All theme styles in `theme.css` and `hud.css` are wrapped in a named cascade layer. Unlayered user CSS in `customCss` automatically wins without `!important`. The biggest visual-customization unlock per Starlight 0.34+ best practice.
+- **Versioned API reference (source-driven pattern).** `build-python-docs.mjs` and `build-ts-docs.mjs` accept a `versions: [{ tag, label, default }]` array. Each tag is checked out via `git worktree add` and regenerated into `<outputDir>/<safeTag>/`. The default version is also aliased at the un-versioned URL so existing links keep working. Pages get `version:` + `versionLabel:` frontmatter and a `:::caution[Older version]` banner on non-default builds. See `apps/playground/src/content/docs/recipes/versioned-docs.md`.
+- **`<VersionPicker>` component.** Topbar dropdown for navigating between API versions. Detects the current version from URL, switches to the equivalent page in the chosen version. Vanilla JS custom element — no React, no hydration cost. Import from `@abstractdata/starlight-theme/components/VersionPicker.astro`.
+- **`abstract-data-docs-author` skill — Phase 1.5 (prose inventory).** New phase that audits the source project's `README.md`, `CHANGELOG.md`, ADRs, and existing docstrings before writing new prose. The skill now lifts existing wording with attribution rather than fabricating from scratch.
+- **`abstract-data-docs-author` skill — route-middleware section.** Documents that JSON-LD, dynamic OG meta, and breadcrumb structured data belong in `routeMiddleware`, not `<Head>` overrides. Includes a working `defineRouteMiddleware()` snippet.
+- **`abstract-data-setup` skill — TSDoc coverage audit (Phase 5a).** Mirrors Phase 4a's `interrogate` Python audit using TypeDoc's `--validation.notDocumented`. Categorizes per-file as green/yellow/red. Phase 12 expanded to install pre-commit hooks for both stacks.
+- **`abstract-data-setup` skill — Phase 7.5 (optional plugin offers).** Multi-select prompt for `starlight-llms-txt`, `@expressive-code/plugin-package-managers`, and `starlight-image-zoom` with smart per-project defaults.
+- **`abstract-data-setup` skill — Phase 8 contributor-loop config.** Now also asks about `lastUpdated: true` and `editLink.baseUrl` (auto-derives the repo URL from `package.json` or `git remote`).
+- **`abstract-data-setup` skill — Phase 9 light/dark logo branching.** When Phase 6 detected a light/dark file pair, Phase 9 now writes `logo: { light, dark }` directly instead of asking which file to use as the default.
+- **`abstract-data-setup` skill — Phase 10(f) per-stack quickstart pruning.** Strips the irrelevant Python/TypeScript autodoc subsection from the scaffolded `quickstart.md` based on detected stacks.
+- **`abstract-data-setup` skill — Phase 11.7 (versioning strategy chooser).** Fires when source has 2+ tags. Multi-choice between source-driven (recommended), `starlight-versions` plugin, branch-per-version, or single version.
+- **`abstract-data-setup` skill — Phase 12.5 (links-validator verification).** Confirms `starlight-links-validator` is wired in the docs project and CI workflow.
+- **Thin-page post-processor (Python + TS autodoc).** Detects empty package landing pages and auto-generates a `## Submodules` section linking to siblings with descriptions. Detects truly-empty leaf pages and injects a `:::note[This page is sparse]` banner. Optional "View source on GitHub" footer when `repoUrl` is configured (and `repoBranch` honors versioned-build tags automatically).
+- **Per-stack quickstart in template.** `packages/template/src/content/docs/quickstart.md` ships with both Python and TypeScript autodoc subsections wrapped in `<!-- abstract-data-setup:python-autodoc -->` / `<!-- abstract-data-setup:ts-autodoc -->` markers; the setup skill prunes the irrelevant block.
+
+### Bug Fixes
+
+- **Sandbox CI: pin Bun to 1.1.45.** Workflow files now use `bun-version: 1.1.45` instead of `latest`. Matches `packageManager` in root `package.json` (1.1.45 is the minimum version with text-lockfile support).
+- **`bun.lock` workspace versions resynced** to match each workspace's actual `package.json` (`@abstractdata/create-docs` 0.3.0, `@abstractdata/starlight-theme` 0.4.0).
+
 ## [0.3.2](https://github.com/Abstract-Data/abstract-data-doc-theme/compare/starlight-theme-v0.3.1...starlight-theme-v0.3.2) (2026-05-07)
 
 

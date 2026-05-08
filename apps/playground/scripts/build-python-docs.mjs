@@ -8,12 +8,20 @@
  *   - searchPath: relative path to your Python source root (parent of the package directory)
  *   - modules:    list of fully-qualified module names to document
  *   - outputDir:  where the generated .md files land (relative to project root)
+ *   - repoUrl:    (optional) base URL for "View source on GitHub" links
+ *   - repoBranch: (optional) default 'main'
+ *   - versions:   (optional) array of { tag, label, default } for versioned API docs
+ *                 — when present, the script does one build per tag via git worktrees,
+ *                   emitting into <outputDir>/<safeTag>/. The default version's pages
+ *                   ALSO emit at <outputDir>/<page>.md (the un-versioned URL) so existing
+ *                   links keep working.
  *
- * For each module:
+ * For each module, in each version:
  *   1. Invokes `pydoc-markdown -I <searchPath> -m <module>` to capture markdown.
- *   2. Writes to `<outputDir>/<safe-name>.md`.
- *   3. Lifts the first H1 into Starlight `title:` frontmatter and synthesizes a
- *      `description:` from the first paragraph.
+ *   2. Lifts the first H1 into Starlight `title:` frontmatter, synthesizes a
+ *      `description:` from the first paragraph, injects `version: <tag>` if versioned.
+ *   3. Post-processes thin pages (auto-generates Submodules section on package landings,
+ *      injects a `:::note` banner on truly-empty pages).
  *
  * Run via:
  *   bun run docs:python
@@ -22,9 +30,10 @@
  *   pipx install pydoc-markdown
  */
 import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve, dirname, relative } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync, mkdtempSync } from 'node:fs';
+import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, '..');
@@ -45,11 +54,11 @@ if (!Array.isArray(cfg.modules) || cfg.modules.length === 0) {
   die('python-autodoc.json: `modules` must be a non-empty array.');
 }
 
-const searchPath = resolve(PROJECT_ROOT, cfg.searchPath);
+const ORIGINAL_SEARCH_PATH = resolve(PROJECT_ROOT, cfg.searchPath);
 const outputDir = resolve(PROJECT_ROOT, cfg.outputDir ?? 'src/content/docs/api');
 
-if (!existsSync(searchPath)) {
-  die(`searchPath does not exist: ${searchPath}\n  Resolved from cfg.searchPath = "${cfg.searchPath}"`);
+if (!existsSync(ORIGINAL_SEARCH_PATH)) {
+  die(`searchPath does not exist: ${ORIGINAL_SEARCH_PATH}\n  Resolved from cfg.searchPath = "${cfg.searchPath}"`);
 }
 
 // ─── Verify pydoc-markdown is available ───────────────────────────────
@@ -64,192 +73,304 @@ try {
   Then re-run this script.`);
 }
 
-// ─── Generate per-module markdown ─────────────────────────────────────
-mkdirSync(outputDir, { recursive: true });
-log(`${c.dim}→ generating ${cfg.modules.length} module page${cfg.modules.length === 1 ? '' : 's'}${c.reset}`);
+// ─── Versioning setup ────────────────────────────────────────────────
+//
+// If `versions` is configured, each entry triggers an independent build
+// from a `git worktree` checkout of the source repo at that tag. We need
+// to know:
+//   - the source repo root (where `.git` lives) so we can `git -C` it
+//   - the relative path from source-repo-root to the original searchPath,
+//     so we can map it to the equivalent path inside each worktree
+//
+// We walk up from ORIGINAL_SEARCH_PATH looking for `.git`; bail out if we
+// hit the filesystem root without finding it.
+function findGitRoot(start) {
+  let dir = start;
+  while (true) {
+    if (existsSync(join(dir, '.git'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+}
 
-// Two-pass build: first generate every page in memory so the thin-page
-// post-processor can cross-reference siblings (for "Submodules" sections
-// on package landing pages), then write everything to disk.
-const pages = []; // { mod, safeName, outPath, title, description, body, frontmatter }
+const versions = Array.isArray(cfg.versions) ? cfg.versions : null;
+let SOURCE_REPO_ROOT = null;
+let SEARCH_PATH_REL = null;
+if (versions) {
+  if (versions.length === 0) die('`versions` is an empty array — set it to null/omit, or list at least one version.');
+  if (!versions.some((v) => v.tag)) die('`versions[].tag` is required on every entry.');
+  if (versions.filter((v) => v.default).length > 1) die('Only one `versions[].default: true` allowed.');
+  if (!versions.some((v) => v.default)) {
+    log(`${c.gold}warn${c.reset} no version marked default; treating the first one (${versions[0].tag}) as default`);
+    versions[0].default = true;
+  }
 
-for (const mod of cfg.modules) {
-  const safeName = mod.replace(/\./g, '_');
-  const outPath = join(outputDir, `${safeName}.md`);
+  SOURCE_REPO_ROOT = findGitRoot(ORIGINAL_SEARCH_PATH);
+  if (!SOURCE_REPO_ROOT) {
+    die(`versions[] is configured but no .git directory was found above ${ORIGINAL_SEARCH_PATH}.\n  Versioned builds require the source to be a git checkout.`);
+  }
+  SEARCH_PATH_REL = relative(SOURCE_REPO_ROOT, ORIGINAL_SEARCH_PATH);
+  log(`${c.dim}→ source repo: ${SOURCE_REPO_ROOT}${c.reset}`);
+  log(`${c.dim}→ relative searchPath: ${SEARCH_PATH_REL || '(repo root)'}${c.reset}`);
+}
 
-  let markdown;
-  try {
-    markdown = execSync(
-      `pydoc-markdown -I "${searchPath}" -m ${mod}`,
-      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] },
+// Make a tag filesystem-safe for use as a directory name. Astro/Starlight
+// route slugs allow dots, but we strip the leading `v` for prettier URLs
+// (so `v0.3.0` → `0.3.0`) and keep dots as-is.
+function safeTag(tag) {
+  return tag.replace(/^v/, '').replace(/[^a-zA-Z0-9._-]/g, '-');
+}
+
+// ─── Per-build pipeline (one invocation per version, or one total) ─────
+function buildOnce({ searchPath, version }) {
+  // version may be null (single-version mode) or { tag, label, default }
+  const versionDir = version ? join(outputDir, safeTag(version.tag)) : outputDir;
+  mkdirSync(versionDir, { recursive: true });
+
+  const tagPrefix = version
+    ? `${c.cyan}[${version.label ?? version.tag}]${c.reset} `
+    : '';
+  log(`${c.dim}→ ${tagPrefix}generating ${cfg.modules.length} module page${cfg.modules.length === 1 ? '' : 's'}${c.reset}`);
+
+  // Two-pass build: first collect every page in memory so the thin-page
+  // post-processor can cross-reference siblings (for "Submodules" sections
+  // on package landing pages), then write everything to disk.
+  const pages = [];
+
+  for (const mod of cfg.modules) {
+    const safeName = mod.replace(/\./g, '_');
+    const outPath = join(versionDir, `${safeName}.md`);
+
+    let markdown;
+    try {
+      markdown = execSync(
+        `pydoc-markdown -I "${searchPath}" -m ${mod}`,
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] },
+      );
+    } catch {
+      log(`${c.red}  ✗ ${tagPrefix}${mod}${c.reset}`);
+      continue;
+    }
+
+    // ─── Frontmatter post-process ────────────────────────────────
+    const h1 = markdown.match(/^# (.+?)$/m);
+    const title = (h1?.[1] ?? mod).trim().replace(/\\_/g, '_');
+    let body = h1 ? markdown.replace(h1[0] + '\n', '') : markdown;
+    body = body.replace(/<a id="[^"]*"><\/a>\n?/g, '');
+    body = body.replace(
+      /:(?:mod|class|func|obj|attr|meth|exc|any|data|const)(?::)?\s*`([^`]+)`/g,
+      '`$1`',
     );
-  } catch {
-    log(`${c.red}  ✗ ${mod}${c.reset}`);
-    continue;
-  }
+    const desc = body.split('\n').find((l) => {
+      const t = l.trim();
+      if (!t) return false;
+      if (/^#{1,6} /.test(t)) return false;
+      if (t.startsWith('```')) return false;
+      if (t.startsWith('|')) return false;
+      if (/^[-*+] /.test(t)) return false;
+      if (/^<[^>]+>/.test(t)) return false;
+      return true;
+    });
+    const description = (desc ?? `API reference for \`${mod}\`.`)
+      .trim().replace(/`/g, '').replace(/"/g, "'").slice(0, 160);
 
-  // ─── Frontmatter post-process ────────────────────────────────
-  // Pull the first H1 (or fall back to module name).
-  // pydoc-markdown escapes underscores inside headings (`foo\_bar`); since
-  // the title goes into frontmatter as plain text (not rendered through
-  // a markdown engine), unescape so the sidebar reads cleanly.
-  const h1 = markdown.match(/^# (.+?)$/m);
-  const title = (h1?.[1] ?? mod).trim().replace(/\\_/g, '_');
-  // Strip the H1 from body so Starlight doesn't render it twice.
-  let body = h1 ? markdown.replace(h1[0] + '\n', '') : markdown;
-  // Strip pydoc-markdown's cross-ref anchors — they bloat output and
-  // contaminate the description extractor.
-  body = body.replace(/<a id="[^"]*"><\/a>\n?/g, '');
-  // Translate Sphinx/reST cross-ref roles (`:mod:`, `:class:`, etc.) into
-  // plain inline code. Without the crossref processor, pydoc-markdown
-  // leaves them as literal text — strip the role marker so the reader
-  // just sees the symbol name.
-  body = body.replace(
-    /:(?:mod|class|func|obj|attr|meth|exc|any|data|const)(?::)?\s*`([^`]+)`/g,
-    '`$1`',
-  );
-  // First real prose line: skip headings, code fences, tables, lists,
-  // empty lines, and any residual HTML tags.
-  const desc = body.split('\n').find((l) => {
-    const t = l.trim();
-    if (!t) return false;
-    if (/^#{1,6} /.test(t)) return false;        // heading
-    if (t.startsWith('```')) return false;       // fence
-    if (t.startsWith('|')) return false;         // table
-    if (/^[-*+] /.test(t)) return false;         // list item
-    if (/^<[^>]+>/.test(t)) return false;        // pure-HTML line
-    return true;
-  });
-  const description = (desc ?? `API reference for \`${mod}\`.`)
-    .trim()
-    .replace(/`/g, '')
-    .replace(/"/g, "'")
-    .slice(0, 160);
-
-  const frontmatter = [
-    '---',
-    `title: ${title}`,
-    `description: "${description}"`,
-    '---',
-    '',
-  ].join('\n');
-
-  pages.push({ mod, safeName, outPath, title, description, body, frontmatter });
-  log(`${c.green}  ✓${c.reset} ${mod} ${c.dim}→ ${relative(PROJECT_ROOT, outPath)}${c.reset}`);
-}
-
-if (pages.length === 0) {
-  die('No pages generated. Check the modules list and searchPath in python-autodoc.json.');
-}
-
-// ─── Thin-page post-processor ─────────────────────────────────────────
-// Two enrichments:
-//   1. Package landings (modules with documented children, e.g. `auditkit`
-//      when `auditkit.config` is also documented) get an auto-generated
-//      "## Submodules" section listing each child with its description.
-//   2. Thin pages (no module-level docstring → almost-empty body) get a
-//      `:::note` banner explaining the gap so the reader isn't surprised
-//      by a near-blank page.
-// If `cfg.repoUrl` is set, every enriched page also gets a "View source"
-// footer link.
-log('');
-log(`${c.dim}→ post-processing thin pages${c.reset}`);
-
-const documentedSet = new Set(pages.map((p) => p.mod));
-const childrenOf = (mod) => pages.filter((p) => p.mod !== mod && p.mod.startsWith(mod + '.'));
-
-let enriched = 0;
-let bannered = 0;
-
-for (const page of pages) {
-  // Count prose-y lines (excludes headings, fences, lists, tables, raw HTML)
-  const proseLines = page.body.split('\n').filter((l) => {
-    const t = l.trim();
-    if (!t) return false;
-    if (/^#{1,6} /.test(t)) return false;
-    if (t.startsWith('```')) return false;
-    if (t.startsWith('|') || /^[-=]{3,}/.test(t)) return false;
-    if (/^[-*+] /.test(t)) return false;
-    if (/^<[^>]+>/.test(t)) return false;
-    return true;
-  }).length;
-  const bodyChars = page.body.replace(/\s+/g, '').length;
-  // "Thin" = barely any body content. Require *both* near-empty char count
-  // and zero prose lines so we don't badge pages that have a one-line
-  // docstring (which is sparse but not absent).
-  const isThin = bodyChars < 150 && proseLines < 1;
-
-  const kids = childrenOf(page.mod);
-  const isPackageLanding = kids.length > 0;
-
-  let newBody = page.body;
-  let touched = false;
-
-  if (isThin && !isPackageLanding) {
-    // Inject sparse-page banner above body. Worded carefully — we know
-    // the page is short, but we don't *know* whether the source has a
-    // docstring (pydoc-markdown sometimes drops them) so phrase as a
-    // suggestion rather than an assertion.
-    const banner = [
-      '',
-      ':::note[This page is sparse]',
-      `The auto-generated reference for \`${page.mod}\` is short. Expanding the source docstring at the top of \`${page.mod.replace(/\./g, '/')}.py\` (a sentence about purpose, when to use it, and a tiny example) would populate this page with real context.`,
-      ':::',
-      '',
-    ].join('\n');
-    newBody = banner + newBody;
-    bannered += 1;
-    touched = true;
-    log(`${c.gold}  ⚠${c.reset} thin-page banner on ${page.mod}`);
-  }
-
-  if (isPackageLanding) {
-    // Build a Submodules section linking to siblings via .md refs
-    // (Astro/Starlight rewrites these to slug URLs at build time).
-    const lines = ['', '## Submodules', ''];
-    for (const kid of kids) {
-      const summary = kid.description && !kid.description.startsWith('API reference for')
-        ? ` — ${kid.description}`
-        : '';
-      lines.push(`- [\`${kid.mod}\`](./${kid.safeName}.md)${summary}`);
+    const fmLines = ['---', `title: ${title}`, `description: "${description}"`];
+    if (version) {
+      fmLines.push(`version: "${version.tag}"`);
+      if (version.label) fmLines.push(`versionLabel: "${version.label}"`);
     }
-    lines.push('');
-    const submodulesSection = lines.join('\n');
+    fmLines.push('---', '');
+    const frontmatter = fmLines.join('\n');
 
-    if (isThin) {
-      // Replace stub body with brief intro + submodules
-      newBody = `\nTop-level package — see submodules below for the documented API surface.\n${submodulesSection}`;
-    } else {
-      // Append to existing body
-      newBody = newBody.replace(/\s+$/, '') + '\n' + submodulesSection;
+    pages.push({ mod, safeName, outPath, title, description, body, frontmatter });
+    log(`${c.green}  ✓${c.reset} ${tagPrefix}${mod} ${c.dim}→ ${relative(PROJECT_ROOT, outPath)}${c.reset}`);
+  }
+
+  if (pages.length === 0) {
+    log(`${c.red}  no pages generated for ${version ? version.tag : 'single build'} — skipping.${c.reset}`);
+    return { pages: [] };
+  }
+
+  // ─── Thin-page post-processor ──────────────────────────────────────
+  const childrenOf = (mod) => pages.filter((p) => p.mod !== mod && p.mod.startsWith(mod + '.'));
+  let enriched = 0;
+  let bannered = 0;
+
+  for (const page of pages) {
+    const proseLines = page.body.split('\n').filter((l) => {
+      const t = l.trim();
+      if (!t) return false;
+      if (/^#{1,6} /.test(t)) return false;
+      if (t.startsWith('```')) return false;
+      if (t.startsWith('|') || /^[-=]{3,}/.test(t)) return false;
+      if (/^[-*+] /.test(t)) return false;
+      if (/^<[^>]+>/.test(t)) return false;
+      return true;
+    }).length;
+    const bodyChars = page.body.replace(/\s+/g, '').length;
+    const isThin = bodyChars < 150 && proseLines < 1;
+
+    const kids = childrenOf(page.mod);
+    const isPackageLanding = kids.length > 0;
+
+    let newBody = page.body;
+    let touched = false;
+
+    // Stale-version banner: non-default versions get a "Latest is X →"
+    // pointer at the top of every page. Lives above the thin/package
+    // banners since version drift is the higher-priority signal.
+    if (version && !version.default) {
+      const defaultVersion = (cfg.versions ?? []).find((v) => v.default);
+      const latestLabel = defaultVersion ? (defaultVersion.label ?? defaultVersion.tag) : 'latest';
+      const latestPath = defaultVersion
+        ? `/${cfg.outputDir.replace(/^src\/content\/docs\/?/, '').replace(/\/$/, '')}/${safeTag(defaultVersion.tag)}/${page.safeName}/`
+        : null;
+      const link = latestPath ? `[${latestLabel} →](${latestPath})` : latestLabel;
+      const stale = [
+        '',
+        `:::caution[Older version]`,
+        `You're viewing **${version.label ?? version.tag}**. Latest is ${link}.`,
+        ':::',
+        '',
+      ].join('\n');
+      newBody = stale + newBody;
+      touched = true;
     }
-    enriched += 1;
-    touched = true;
-    log(`${c.green}  ✓${c.reset} added Submodules section to ${page.mod} (${kids.length} child${kids.length === 1 ? '' : 'ren'})`);
+
+    if (isThin && !isPackageLanding) {
+      const noteBlock = [
+        '',
+        ':::note[This page is sparse]',
+        `The auto-generated reference for \`${page.mod}\` is short. Expanding the source docstring at the top of \`${page.mod.replace(/\./g, '/')}.py\` (a sentence about purpose, when to use it, and a tiny example) would populate this page with real context.`,
+        ':::',
+        '',
+      ].join('\n');
+      newBody = noteBlock + newBody;
+      bannered += 1;
+      touched = true;
+      log(`${c.gold}  ⚠${c.reset} ${tagPrefix}thin-page banner on ${page.mod}`);
+    }
+
+    if (isPackageLanding) {
+      const lines = ['', '## Submodules', ''];
+      for (const kid of kids) {
+        const summary = kid.description && !kid.description.startsWith('API reference for')
+          ? ` — ${kid.description}`
+          : '';
+        lines.push(`- [\`${kid.mod}\`](./${kid.safeName}.md)${summary}`);
+      }
+      lines.push('');
+      const submodulesSection = lines.join('\n');
+
+      if (isThin) {
+        // Replace stub body with brief intro + submodules. If we already
+        // prepended a stale-version banner, preserve it at the very top.
+        const stalePrefix = newBody.startsWith('\n:::caution[Older version]')
+          ? newBody.slice(0, newBody.indexOf(':::\n', 1) + 4) + '\n'
+          : '';
+        newBody = stalePrefix +
+          `\nTop-level package — see submodules below for the documented API surface.\n${submodulesSection}`;
+      } else {
+        newBody = newBody.replace(/\s+$/, '') + '\n' + submodulesSection;
+      }
+      enriched += 1;
+      touched = true;
+      log(`${c.green}  ✓${c.reset} added Submodules section to ${page.mod} (${kids.length} child${kids.length === 1 ? '' : 'ren'})`);
+    }
+
+    if (touched && cfg.repoUrl) {
+      const branch = version ? version.tag : (cfg.repoBranch ?? 'main');
+      const repo = cfg.repoUrl.replace(/\/$/, '');
+      const sourcePath = page.mod.replace(/\./g, '/');
+      const target = isPackageLanding
+        ? `${sourcePath}/__init__.py`
+        : `${sourcePath}.py`;
+      newBody = newBody.replace(/\s+$/, '') +
+        `\n\n## See also\n\n- [View source on GitHub](${repo}/blob/${branch}/${target})\n`;
+    }
+
+    writeFileSync(page.outPath, page.frontmatter + newBody);
   }
 
-  // Optional "View source" footer if repoUrl is configured
-  if (touched && cfg.repoUrl) {
-    const branch = cfg.repoBranch ?? 'main';
-    const repo = cfg.repoUrl.replace(/\/$/, '');
-    const sourcePath = page.mod.replace(/\./g, '/');
-    // Best-effort: link to the package __init__.py for landing pages,
-    // module .py for leaf modules. Either way the reader gets close.
-    const target = isPackageLanding
-      ? `${sourcePath}/__init__.py`
-      : `${sourcePath}.py`;
-    newBody = newBody.replace(/\s+$/, '') +
-      `\n\n## See also\n\n- [View source on GitHub](${repo}/blob/${branch}/${target})\n`;
+  log('');
+  log(`${c.green}✓${c.reset} ${tagPrefix}Generated ${c.gold}${pages.length}${c.reset} page${pages.length === 1 ? '' : 's'} in ${c.cyan}${relative(PROJECT_ROOT, versionDir)}${c.reset}/`);
+  if (enriched || bannered) {
+    log(`${c.dim}  ${enriched} package landing${enriched === 1 ? '' : 's'} enriched, ${bannered} thin page${bannered === 1 ? '' : 's'} flagged${c.reset}`);
   }
 
-  writeFileSync(page.outPath, page.frontmatter + newBody);
+  return { pages };
+}
+
+// ─── Run: single-build or per-version with worktrees ──────────────────
+const createdWorktrees = [];
+
+function cleanup() {
+  for (const wt of createdWorktrees) {
+    try {
+      execSync(`git -C "${SOURCE_REPO_ROOT}" worktree remove --force "${wt}"`,
+        { stdio: 'ignore' });
+    } catch {
+      // best-effort; if remove failed, rm -rf the directory
+      try { rmSync(wt, { recursive: true, force: true }); } catch {}
+    }
+  }
+}
+
+process.on('exit', cleanup);
+process.on('SIGINT', () => { cleanup(); process.exit(130); });
+
+try {
+  if (!versions) {
+    // Single-version build (existing behavior)
+    buildOnce({ searchPath: ORIGINAL_SEARCH_PATH, version: null });
+  } else {
+    // Per-version builds via git worktrees
+    for (const v of versions) {
+      const wt = mkdtempSync(join(tmpdir(), `autodoc-${safeTag(v.tag)}-`));
+      createdWorktrees.push(wt);
+      log(`${c.dim}→ git worktree add ${wt} ${v.tag}${c.reset}`);
+      try {
+        execSync(`git -C "${SOURCE_REPO_ROOT}" worktree add --detach "${wt}" "${v.tag}"`,
+          { stdio: 'inherit' });
+      } catch {
+        die(`Failed to create git worktree for ${v.tag}.\n  Verify the tag exists in ${SOURCE_REPO_ROOT}: git tag --list "${v.tag}"`);
+      }
+      const wtSearchPath = SEARCH_PATH_REL ? join(wt, SEARCH_PATH_REL) : wt;
+      if (!existsSync(wtSearchPath)) {
+        log(`${c.gold}warn${c.reset} ${v.tag}: searchPath ${wtSearchPath} doesn't exist (the directory layout may have changed). Skipping.`);
+        continue;
+      }
+      buildOnce({ searchPath: wtSearchPath, version: v });
+    }
+
+    // Also emit the default version at the un-versioned path so existing
+    // links to /api/foo/ keep resolving without a redirect step.
+    const defaultV = versions.find((v) => v.default);
+    if (defaultV) {
+      log(`${c.dim}→ aliasing ${defaultV.tag} as the default (un-versioned) build${c.reset}`);
+      const wt = mkdtempSync(join(tmpdir(), `autodoc-default-`));
+      createdWorktrees.push(wt);
+      try {
+        execSync(`git -C "${SOURCE_REPO_ROOT}" worktree add --detach "${wt}" "${defaultV.tag}"`,
+          { stdio: 'ignore' });
+        const wtSearchPath = SEARCH_PATH_REL ? join(wt, SEARCH_PATH_REL) : wt;
+        // Stash original outputDir, point at root for un-versioned emit
+        buildOnce({ searchPath: wtSearchPath, version: null });
+      } catch (err) {
+        log(`${c.gold}warn${c.reset} default-alias build failed: ${err.message}`);
+      }
+    }
+  }
+} finally {
+  cleanup();
 }
 
 log('');
-log(`${c.green}✓${c.reset} Generated ${c.gold}${pages.length}${c.reset} page${pages.length === 1 ? '' : 's'} in ${c.cyan}${relative(PROJECT_ROOT, outputDir)}${c.reset}/`);
-if (enriched || bannered) {
-  log(`${c.dim}  ${enriched} package landing${enriched === 1 ? '' : 's'} enriched, ${bannered} thin page${bannered === 1 ? '' : 's'} flagged${c.reset}`);
+log(`${c.dim}Sidebar wiring (astro.config.mjs):${c.reset}`);
+log(`${c.dim}  { label: 'API Reference', autogenerate: { directory: '${cfg.outputDir.replace(/^src\/content\/docs\/?/, '')}' } }${c.reset}`);
+if (versions) {
+  log(`${c.dim}  → with ${versions.length} version${versions.length === 1 ? '' : 's'}, the sidebar will auto-group by version subdirectory.${c.reset}`);
+  log(`${c.dim}  → import VersionPicker: import { VersionPicker } from '@abstractdata/starlight-theme/components';${c.reset}`);
 }
-log(`${c.dim}  Sidebar wiring (astro.config.mjs):${c.reset}`);
-log(`${c.dim}    { label: 'API Reference', autogenerate: { directory: 'api' } }${c.reset}`);
 log('');

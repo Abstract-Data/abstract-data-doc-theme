@@ -63,6 +63,7 @@ export default defineConfig({
           label: 'Recipes',
           items: [
             { label: 'Python autodoc', slug: 'recipes/python-autodoc' },
+            { label: 'Versioned API reference', slug: 'recipes/versioned-docs' },
           ],
         },
         {
