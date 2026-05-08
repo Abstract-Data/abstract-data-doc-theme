@@ -39,7 +39,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          # Pinned to match `packageManager` in root package.json
+          # (1.1.45 = minimum version with text-lockfile support).
+          bun-version: 1.1.45
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -66,7 +68,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          # Pinned to match `packageManager` in root package.json
+          # (1.1.45 = minimum version with text-lockfile support).
+          bun-version: 1.1.45
       - uses: actions/setup-node@v4
         with:
           node-version: '20'

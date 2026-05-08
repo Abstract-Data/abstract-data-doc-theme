@@ -41,7 +41,10 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          # Must match `packageManager` in root package.json so the
+          # `--frozen-lockfile` install reproduces locally. 1.1.45 is the
+          # minimum version with text-lockfile support, which the repo uses.
+          bun-version: 1.1.45
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
