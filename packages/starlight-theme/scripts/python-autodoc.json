@@ -1,0 +1,10 @@
+{
+  "$schema": "Configuration for scripts/build-python-docs.mjs. Adjust to point at your Python source.",
+  "searchPath": "../../python-example/src",
+  "modules": [
+    "example_module"
+  ],
+  "outputDir": "src/content/docs/api",
+  "repoUrl": "",
+  "repoBranch": "main"
+}

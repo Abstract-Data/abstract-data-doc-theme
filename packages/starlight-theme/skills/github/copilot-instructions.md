@@ -1,46 +1,52 @@
-# Abstract Data — Documentation Setup Reference
+# Abstract Data Documentation Theme — Reference
 
 <!--
-  Auto-generated from .claude/skills/abstract-data-setup/SKILL.md.
-  Edit the source SKILL.md and run `bun run sync-skills` to regenerate.
+  Auto-generated from the SKILL.md sources under .claude/skills/.
+  Edit those and run `bun run sync-skills` to regenerate.
   Do not hand-edit this file — changes will be overwritten.
 -->
 
 > **Note:** GitHub Copilot applies these instructions globally to every Chat
-> interaction in this repo. The workflow below is procedural — Copilot can
-> guide the user through the phases but cannot natively run interactive
-> prompts. Use Claude Code or Cursor for fully automated execution.
+> interaction in this repo. The workflows below are procedural — Copilot can
+> guide the user through them but cannot natively run interactive prompts.
+> Use Claude Code or Cursor for fully automated execution.
 
-## When this applies
+## Available workflows
 
-Set up the Abstract Data Documentation Theme (built on Astro Starlight) for a Python project. Detect source code, audit docstring coverage, sniff docstring style (Google/NumPy/Sphinx), ask configuration questions (modules, motion, credit, version), wire up config files (scripts/python-autodoc.json, astro.config.mjs sidebar + plugin options, package.json scripts), and optionally install a docstring-coverage pre-commit hook in the source project. Use when the user says "set up docs", "configure docs", "wire up Python autodoc", "scan my project for docs", "set up Abstract Data docs", "add API reference", "audit docstrings", or similar phrases inside a docs project that uses @abstractdata/starlight-theme (the npm package name; product is the Abstract Data Documentation Theme).
+- **abstract-data-setup** — detection + configuration + generator wiring
+- **abstract-data-docs-author** — read source code, write narrative docs
 
-## Workflow
+When a user request matches one of these, follow the relevant workflow below.
+
+---
+
+## Setup workflow (`abstract-data-setup`)
+
+### When this applies
+
+Set up the Abstract Data Documentation Theme (built on Astro Starlight) for a project. Detect source code across stacks (Python, TypeScript, Next.js, TanStack, OpenAPI, Prisma, Drizzle), audit docstring coverage for Python, sniff docstring style (Google/NumPy/Sphinx), detect or pick a logo asset, ask configuration questions (modules/entry points, motion, credit, version), wire up config files (scripts/python-autodoc.json, scripts/ts-autodoc.json, astro.config.mjs sidebar + plugin options, package.json scripts), and optionally install a docstring-coverage pre-commit hook. Use when the user says "set up docs", "configure docs", "wire up Python autodoc", "wire up TypeScript autodoc", "scan my project for docs", "set up Abstract Data docs", "add API reference", "audit docstrings", or similar phrases inside a docs project that uses @abstractdata/starlight-theme (the npm package name; product is the Abstract Data Documentation Theme).
+
+### Procedure
 
 # Abstract Data Documentation Theme — Setup
 
-Bootstrap the Abstract Data Documentation Theme — the branded docs system Abstract Data uses across client projects, built on Astro Starlight and shipped as the npm package `@abstractdata/starlight-theme`. Round 1.5 covers Python projects with docstring-coverage and style awareness. Future rounds will add TypeScript, Next.js, TanStack, OpenAPI.
+Bootstrap the Abstract Data Documentation Theme — the branded docs system Abstract Data uses across client projects, built on Astro Starlight and shipped as the npm package `@abstractdata/starlight-theme`. Round 2 covers Python and TypeScript autodoc with full automation, plus detection-and-recipe handling for Next.js, TanStack Router, OpenAPI, Prisma, and Drizzle.
 
 ## When to invoke
 
-Run this skill when:
+Run this skill when the user says "set up docs", "configure docs", "wire up Python autodoc", "wire up TypeScript autodoc", "scan my project for docs", "audit docstrings", or similar inside a project that has `@abstractdata/starlight-theme` in its `package.json`. If the cwd doesn't have that dep, stop and point them at `bun create @abstractdata/docs`.
 
-- The user says "set up docs", "configure docs", "wire up Python autodoc", "scan my project for docs", "audit docstrings", or similar.
-- The cwd has `@abstractdata/starlight-theme` in `dependencies` or `devDependencies` of `package.json`.
+## Workflow
 
-If the cwd doesn't have that dep, stop and tell the user this skill only runs in Abstract Data documentation projects (point them at `bun create @abstractdata/docs`).
-
-## Workflow (11 phases)
-
-Ask the user via your interactive prompt mechanism for every choice — never assume.
+Use interactive prompts for every choice — never assume.
 
 ### Phase 1 — Confirm context
 
 Read `package.json`. Verify `@abstractdata/starlight-theme` is in deps; verify `astro.config.mjs` and `src/content/docs/` exist. Stop with a clear message if any check fails. Don't ask the user to confirm — just announce findings and move on.
 
-### Phase 2 — Locate the source project
+### Phase 2 — Locate the source project(s)
 
-an interactive prompt: where does the source project live?
+Ask via interactive prompt: where does the source project live?
 - "This directory" — docs ARE the source (rare)
 - "Parent directory (..)" — docs sit inside the source repo
 - "Sibling directory" — separate repos at the same level
@@ -48,109 +54,237 @@ an interactive prompt: where does the source project live?
 
 Validate the path exists. Reprompt on invalid.
 
-### Phase 3 — Detect Python signals
+### Phase 3 — Detect all stack signals
 
-Look for `pyproject.toml`, `setup.py`, `requirements.txt`, `src/<pkg>/__init__.py`, `<pkg>/__init__.py`. If none, exit: "I didn't find Python source at <path>. Round 1 only handles Python projects."
+In the source path, scan for these signals in parallel. Report what you find before asking any per-stack questions.
 
-If found, identify:
-- **Package root** (directory with top-level `__init__.py`)
-- **Package name** (from `pyproject.toml [project] name`, or directory name)
-- **Submodules** (one level deep, exclude dunders, cap at ~30)
+**Python:**
+- `pyproject.toml`, `setup.py`, `requirements.txt`, `Pipfile`
+- `src/<pkg>/__init__.py` or `<pkg>/__init__.py`
 
-### Phase 4 — Audit docstring coverage
+**TypeScript library:**
+- `tsconfig.json` AND `package.json` with `main`/`exports`/`types` fields
+- `src/index.ts` or similar entry point
 
-For each candidate module, compute the percentage of public callables (functions, methods, classes) that have docstrings.
+**Next.js:**
+- `next.config.{js,mjs,ts}`
+- `app/` directory (App Router) or `pages/` directory (Pages Router)
+- `next` in dependencies
 
-**Preferred tool: `interrogate`.** Check if it's available:
+**TanStack Router / Start:**
+- `@tanstack/react-router`, `@tanstack/react-start`, or `@tanstack/start` in dependencies
+- `src/routes/` directory
+- `src/routeTree.gen.ts` (generated route tree)
+
+**OpenAPI:**
+- `openapi.yaml`, `openapi.json`, `swagger.yaml`, `swagger.json`
+- Files matching `*.openapi.{yaml,json}`
+
+**Prisma:**
+- `prisma/schema.prisma`
+
+**Drizzle:**
+- `drizzle.config.{ts,js}`
+- Files in a `schema/` directory exporting `pgTable` / `mysqlTable` / `sqliteTable`
+
+**Logo asset (in the docs project, not the source):**
+- `src/assets/*.{png,svg,jpg,jpeg,webp}` — anything that looks like a logo (`logo.*`, `*-logo.*`, `brand.*`)
+
+Display the detection summary in a table:
+
+```
+Stack          Detected   Action
+Python         yes        will offer Python autodoc
+TypeScript     yes        will offer TypeScript autodoc
+Next.js        no         —
+TanStack       yes        recipe-only (no auto-config)
+OpenAPI        no         —
+Prisma         yes        recipe-only (no auto-config)
+Drizzle        no         —
+Logo           1 file     will confirm choice
+```
+
+If no source signals at all → exit politely.
+
+### Phase 4 — Python: audit + style (only if Python detected)
+
+#### 4a — Audit docstring coverage
+
+Preferred tool: `interrogate` (`pipx install pydoc-markdown` first if not installed). Fall back to a Python AST one-liner. Categorize per-module:
+- **≥ 80%** green
+- **50-79%** yellow
+- **< 50%** red
+
+Show the table; don't editorialize.
+
+#### 4b — Detect docstring style
+
+Sample 10–20 docstrings, count distinctive markers (Google `Args:`/`Returns:`, NumPy `Parameters\n----`, Sphinx `:param x:`). Pick the leader if it has ≥60% of markers; otherwise call it "mixed."
+
+### Phase 5 — TypeScript: entry-point detection (only if TS library detected)
+
+Read `package.json` `main`/`exports`/`types` fields. Walk `src/` for `index.ts` files. Build a candidate list of entry points (one per public module surface).
+
+Common shapes:
+- Single entry: `src/index.ts` → one entry point
+- Multi-entry: `package.json` `exports` lists multiple → one entry per exported subpath
+- Monorepo: each package has its own entry
+
+#### 5a — Audit TSDoc coverage
+
+Mirror Phase 4a for TypeScript. Run TypeDoc in **validation-only** mode against the chosen entry points:
 
 ```bash
-which interrogate
+bunx typedoc \
+  --plugin typedoc-plugin-markdown \
+  --validation.notDocumented \
+  --treatValidationWarningsAsErrors false \
+  --emit none \
+  <entryPoints>
 ```
 
-If yes, run:
+Parse the resulting warnings — TypeDoc emits one line per undocumented symbol with `[warning]` prefix. Group by source file and report per-file coverage as a percentage of public exports that have at least one TSDoc block. Use the same color thresholds as the Python audit:
 
-```bash
-interrogate -v <package_root> --omit-covered-files --output json 2>/dev/null | jq .
-```
+- **≥ 80%** green
+- **50–79%** yellow
+- **< 50%** red
 
-If `interrogate` is unavailable, fall back to a quick AST walk via `python3 -c`:
+If TypeDoc isn't installed yet, fall back to a quick AST sniff: count files in `src/` with `/**` blocks vs total exported declarations. Coarser, but no install required.
 
-```bash
-python3 -c "
-import ast, sys, os
-def cov(path):
-    with open(path) as f:
-        tree = ast.parse(f.read())
-    items = [n for n in ast.walk(tree)
-             if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
-             and not n.name.startswith('_')]
-    if not items: return None
-    have = sum(1 for n in items if ast.get_docstring(n))
-    return have, len(items)
-# walk a directory ...
-"
-```
+Show the table; don't editorialize. The result feeds Phase 12 (pre-commit hook offer).
 
-Compute per-module coverage. Categorize:
-- **≥ 80%** — green, ready to document
-- **50-79%** — yellow, usable but gaps
-- **< 50%** — red, autodoc output will be sparse
+### Phase 6 — Logo detection
 
-Show the user a table-style report:
+Scan `src/assets/**/*.{png,svg,jpg,jpeg,webp}` recursively. Build candidate categories:
+
+- **Topbar mark candidates**: filename matches `(logo|brand|mark|icon)\.(svg|png|webp)$` (case-insensitive). SVG preferred.
+- **Light/dark pair**: filenames contain `light` or `dark` and otherwise match logo conventions (e.g. `logo-light.svg` + `logo-dark.svg`). Starlight supports both via `logo.light` + `logo.dark`.
+- **Hero candidates**: any image larger than ~80KB or with `hero` / `splash` in the name — usually a bigger variant for the splash page.
+- **Other images**: no logo conventions; treat as miscellaneous.
+
+For each candidate, gather:
+- File size in bytes
+- Format (extension)
+- Whether the filename indicates light/dark intent
+
+Display a 4-7 line summary table:
 
 ```
-Module                              Coverage   Status
-auditkit.config                     12/12 100% ✓ green
-auditkit.bootstrap                  3/3   100% ✓ green
-auditkit.modules.ssl                2/11  18%  ✗ red — consider adding docstrings first
+File                              Size      Format     Suggested role
+src/assets/logo.svg               12 KB     SVG        topbar mark (recommended)
+src/assets/logo-light.svg         12 KB     SVG        topbar (light mode)
+src/assets/logo-dark.svg          12 KB     SVG        topbar (dark mode)
+src/assets/hero-mark.png          145 KB    PNG        splash hero image
 ```
 
-Don't editorialize too much — just the data. Then move on.
+Branch on what you found:
 
-### Phase 5 — Detect docstring style
+- **One mark + light/dark pair** → propose using the pair (Starlight handles auto-switching by `data-theme`)
+- **One mark, no pair** → propose using it for both modes
+- **Multiple marks, no clear winner** → multiselect: which for topbar? Which for hero? `multiSelect: true` interactive prompt.
+- **Zero candidates** → ask: "I don't see a logo in `src/assets/`. Drop one in (SVG preferred, ~256x256 minimum), tell me where it is, or skip for now and configure manually later."
 
-Sample 10–20 docstrings across the source tree (e.g., grep for `"""` and read context). Count distinctive markers:
+Format guidance to surface alongside the prompt:
+- SVG renders crispest at any size; preferred for both topbar and hero.
+- PNG works fine; 256×256 minimum for the topbar (Astro will downscale via the asset pipeline).
+- JPG is fine for hero photos but bad for marks (compression artifacts on edges).
+- Files > 200KB will bloat first-paint; suggest optimizing or using a smaller source.
 
-- **Google**: `^\s+Args:\s*$`, `^\s+Returns:\s*$`, `^\s+Raises:\s*$`, `^\s+Yields:\s*$`
-- **NumPy**: `^\s+Parameters\s*\n\s+-+\s*$`, `^\s+Returns\s*\n\s+-+\s*$`
-- **Sphinx/reST**: `:param \w+:`, `:returns:`, `:raises \w+:`, `:type \w+:`
+### Phase 7 — Recommend documentation surfaces
 
-Whichever style has the highest hit count wins. If the leader is < 60% of total markers, call it "mixed" and warn.
+For each detected stack, ask whether to wire it up. Stack questions are per-stack, not lumped together.
 
-Report findings:
+#### Python (if detected)
 
-```
-Docstring style: Google (32 markers, 0 NumPy, 4 Sphinx)
-```
-
-If mixed, mention that pydoc-markdown will produce inconsistent output until the style is unified, but don't force a decision — proceed with the most common style.
-
-(Note: pydoc-markdown's CLI doesn't accept processor flags, so the orchestrator can't auto-apply the matching processor. Style detection is informational unless the user opts into a YAML pipeline.)
-
-### Phase 6 — Recommend modules to document
-
-Show coverage findings. an interactive prompt (max 4 options, first recommended):
+Interactive prompt with up to 4 options:
 - "Top-level package only" (Recommended)
 - "All green-coverage modules" (≥80%)
-- "Specific submodules I'll pick" → follow up with `multiSelect: true`
-- "Everything" (warn about red modules: empty pages)
+- "Specific submodules I'll pick" → multiselect
+- "Everything" (warn about red-coverage modules)
 
-Build the final modules array as fully-qualified names.
+#### TypeScript (if detected)
 
-### Phase 7 — Gather brand configuration
+Interactive prompt:
+- "Single root entry point (src/index.ts)" (Recommended for libs with one public API)
+- "All paths in package.json `exports`" (Recommended for multi-entry libs)
+- "I'll pick specific entry points" → free-form
 
-Read existing `astro.config.mjs`. If `motion`, `credit`, `version` are already set and the user didn't ask to change them, skip this phase.
+#### Other detected stacks (Next.js, TanStack, OpenAPI, Prisma, Drizzle)
 
-Otherwise, batch into one an interactive prompt call:
+Don't auto-configure. Tell the user the recipe and let them follow up:
+
+- **Next.js**: "I detected Next.js. There isn't a standard one-shot route documenter, but you can write a small build script that walks `app/` or `pages/` and emits a `routes.md`. Want me to draft one?"
+- **TanStack Router**: "I detected TanStack Router. Generate a route map by importing `routeTree.gen.ts` and walking it in a build script. Want a starter?"
+- **OpenAPI**: "I detected an OpenAPI spec. Recommend `@astrojs/starlight-openapi` for the cleanest integration. Want me to install it and wire it up?"
+- **Prisma**: "I detected a Prisma schema. Try `prisma-markdown` for schema docs. Want me to add it to dev deps and wire a script?"
+- **Drizzle**: "I detected a Drizzle config. There isn't a mature schema-to-markdown tool yet — most teams write their own walker over the schema exports. Want me to draft a starter?"
+
+If the user says yes to any of these, fall back to free-form work — these aren't covered by the main config files.
+
+### Phase 8 — Gather brand configuration
+
+Read existing `astro.config.mjs`. If `motion`, `credit`, and `version` are already set and the user hasn't asked to change them, skip this phase.
+
+Otherwise, batch into one prompt:
 1. Motion: full | calm (Recommended)
 2. Credit: auto | hide
-3. Version chip: show (then ask for string) | omit
+3. Version chip: show with version string | omit
 
-### Phase 8 — Write configs
+### Phase 9 — Configure logo
+
+Two surfaces need updating:
+
+**a) Topbar logo — `astro.config.mjs` `starlight.logo`**
+
+Ask the user one final question if not already known: does this logo image include the project name as text/wordmark?
+
+- **Yes** (logo + wordmark in one image) → `replacesTitle: true` — Starlight hides the text title and shows just the logo.
+- **No** (just a mark/icon, no text) → `replacesTitle: false` — Starlight shows the mark beside the text title.
+
+Then write the config:
+
+```js
+// Single mark
+logo: {
+  src: './src/assets/logo.svg',
+  replacesTitle: false,
+}
+
+// Light/dark pair
+logo: {
+  light: './src/assets/logo-light.svg',
+  dark: './src/assets/logo-dark.svg',
+  replacesTitle: true,
+}
+```
+
+If a `logo:` block already exists in the config, edit it in place — don't add a duplicate. If `logo:` is in a comment or commented-out, uncomment and update.
+
+**b) Splash hero image — `src/content/docs/index.mdx` `hero.image.file`**
+
+Default Starlight splash hero supports a separate (usually larger) image. Check the existing `index.mdx` frontmatter:
+
+```yaml
+hero:
+  image:
+    file: ../../assets/hero-mark.png
+    alt: <project name>
+```
+
+If a hero candidate was identified in Phase 6, update this path. If the same logo serves both roles, point both at the same file. If the user wants to use the branded `<Hero>` MDX component (richer than the frontmatter hero), point them at the migration guide section that covers it.
+
+**Verify after writing:**
+
+After both surfaces are updated, encourage the user to run `bun dev` and visually confirm the logo renders correctly in both light and dark modes (toggle from the topbar). Common issues:
+- Logo is white-on-white in light mode → need a dark variant or use the `light`/`dark` pair pattern
+- Logo is way too small/large → adjust the source dimensions or add CSS overrides via `customCss`
+- File path is wrong → relative paths in `astro.config.mjs` are relative to the project root, not the file itself
+
+### Phase 10 — Write configs
 
 Show diffs in your reasoning before writing.
 
-**a) `scripts/python-autodoc.json`** — resolve searchPath relative to the docs project root. If file exists, merge: keep outputDir, replace searchPath/modules.
+#### a) `scripts/python-autodoc.json` (if Python wired up)
 
 ```json
 {
@@ -160,116 +294,431 @@ Show diffs in your reasoning before writing.
 }
 ```
 
-**b) `astro.config.mjs`** — two edits:
-1. Ensure sidebar has `{ label: 'API Reference', autogenerate: { directory: 'api' } }`. Don't duplicate.
-2. Update the `abstractData(...)` call's `motion`/`credit`/`version`. Preserve other options.
+#### b) `scripts/ts-autodoc.json` (if TypeScript wired up)
 
-**c) `package.json`** — ensure `scripts["docs:python"]` is `"node scripts/build-python-docs.mjs"`.
-
-**d) `scripts/build-python-docs.mjs`** — should already exist from the template. If missing, tell the user to scaffold a fresh project via `bun create @abstractdata/docs` and copy it over.
-
-### Phase 9 — Optionally run
-
-an interactive prompt: generate API pages now?
-- "Yes, run bun run docs:python" (Recommended)
-- "No, I'll run it later"
-
-If yes, invoke via Bash. Pass through any pydoc-markdown install instructions verbatim if missing.
-
-### Phase 10 — Offer pre-commit hook in source project
-
-Only run this phase if Phase 4 found at least one module below 80% coverage. Otherwise skip.
-
-an interactive prompt:
-
-```
-Want me to add a docstring-coverage pre-commit hook to your source project at <path>?
-- "Yes, install interrogate hook" (Recommended)
-- "Yes, but with a lower threshold (60%)" — for projects that need to ramp up
-- "No, skip"
+```json
+{
+  "entryPoints": [...],
+  "tsconfig": "<relative path>",
+  "outputDir": "src/content/docs/api/ts"
+}
 ```
 
-If yes:
+#### c) `astro.config.mjs`
 
-1. Check for existing `.pre-commit-config.yaml` in the source project root.
-2. If absent, create:
+Multi-edit:
 
-```yaml
-repos:
-  - repo: https://github.com/econchick/interrogate
-    rev: 1.7.0
+1. Sidebar — ensure entries exist for each enabled generator:
+   - `{ label: 'Python API', autogenerate: { directory: 'api' } }` — if Python
+   - `{ label: 'TypeScript API', autogenerate: { directory: 'api/ts' } }` — if TS
+2. Plugin call — update `motion`/`credit`/`version` from Phase 8.
+3. Logo — update `logo.src` from Phase 9.
+
+Don't duplicate sidebar entries. Don't add a second `abstractData(...)` plugin call.
+
+#### d) `package.json`
+
+Add scripts conditionally:
+- `"docs:python": "node scripts/build-python-docs.mjs"` — if Python wired up
+- `"docs:ts": "node scripts/build-ts-docs.mjs"` — if TS wired up
+
+Update the `build` script to chain them:
+```json
+"build": "bun run docs:python && bun run docs:ts && astro check && astro build"
+```
+(Skip the chains for stacks not enabled.)
+
+#### e) Required dev deps for TS
+
+If TS wired up, add to dev deps:
+```bash
+bun add -d typedoc typedoc-plugin-markdown
+```
+
+Tell the user to run this; don't run it yourself.
+
+#### f) Tailor `src/content/docs/quickstart.md` to the detected stack
+
+The scaffolded `quickstart.md` ships with both Python and TypeScript autodoc subsections wrapped in HTML comment markers:
+
+```html
+<!-- abstract-data-setup:python-autodoc -->
+…Python instructions…
+<!-- /abstract-data-setup:python-autodoc -->
+
+<!-- abstract-data-setup:ts-autodoc -->
+…TypeScript instructions…
+<!-- /abstract-data-setup:ts-autodoc -->
+```
+
+After you've finalized the stack(s) for this project (Phase 7), edit `quickstart.md` to remove the irrelevant block:
+
+- **Python only** → strip everything between `<!-- abstract-data-setup:ts-autodoc -->` and `<!-- /abstract-data-setup:ts-autodoc -->` (inclusive).
+- **TypeScript only** → strip the Python block similarly.
+- **Both** → leave both blocks; remove only the comment markers themselves so the published page is clean.
+- **Neither** (no autodoc wired up) → strip both blocks plus the "## Add API reference" heading and intro paragraph.
+
+This is idempotent: re-runs of the skill check whether the markers still exist before pruning. If the user has already removed the markers (or hand-edited the file), leave it alone — never re-inject content into a customized quickstart.
+
+### Phase 11 — Optionally run generators
+
+Per enabled generator, ask: "Generate now? [Yes / No]"
+
+- Python → `bun run docs:python`
+- TypeScript → `bun run docs:ts`
+
+Pass through any tool-not-installed errors verbatim.
+
+### Phase 11.5 — Offer docs-author dispatch (if generators ran)
+
+After generation, scan `src/content/docs/api/` for **thin pages** — auto-generated files whose body (after frontmatter and the auto-rendered H1) is fewer than ~200 bytes, OR pages that consist of just signatures with no descriptive prose. These are the "what the heck is this?" pages — the source's docstrings are too sparse for the mechanical autodoc to produce useful output.
+
+If any thin pages are found, surface this to the user:
+
+> "I noticed N of the generated API pages are sparse — your source's docstrings are thin. The companion skill `abstract-data-docs-author` reads the source code itself and writes narrative prose to enrich those pages (module overview, usage example from tests, related-modules cross-references). Want me to invoke it now?"
+
+If yes: hand off to the `abstract-data-docs-author` skill (Claude Code: load the skill at `.claude/skills/abstract-data-docs-author/SKILL.md`; Cursor: refer to `.cursor/rules/abstract-data-docs-author.mdc`). Pass along the project profile and detected stack info so the docs-author skill doesn't have to re-discover.
+
+If no thin pages found, skip this phase silently. Don't push the docs-author skill on a project that doesn't need it.
+
+### Phase 12 — Optional pre-commit hook (per-stack)
+
+Fires only if Phase 4a (Python) or Phase 5a (TypeScript) found modules below the 80% coverage threshold.
+
+**Python branch** — if Phase 4a found yellow/red modules, offer:
+
+- Tool: `interrogate` (lightweight, no project changes beyond the hook entry).
+- Config: append a `[tool.interrogate]` table to `pyproject.toml` setting `fail-under = 80`, `exclude = ["tests"]`, etc.
+- `.pre-commit-config.yaml`: add the `econchick/interrogate` repo with the chosen revision.
+
+**TypeScript branch** — if Phase 5a found yellow/red entry points, offer either:
+
+- **Local script hook (preferred)**: a one-liner `pre-commit` config that runs the docs build script with `--validation.notDocumented` and fails the commit if any new warnings appear. No extra dependencies beyond `typedoc` (already a dev dep).
+
+  ```yaml
+  # .pre-commit-config.yaml fragment
+  - repo: local
     hooks:
-      - id: interrogate
-        args: [--fail-under=80, -v, src/]
-```
+      - id: tsdoc-coverage
+        name: TSDoc coverage
+        entry: bunx typedoc --plugin typedoc-plugin-markdown --validation.notDocumented --treatValidationWarningsAsErrors true --emit none
+        language: system
+        types: [ts]
+        pass_filenames: false
+  ```
 
-3. If present, append the interrogate hook to the `repos` array. Don't duplicate if already present.
-4. Add `interrogate` to dev deps:
-   - `pyproject.toml` — add to `[project.optional-dependencies] dev` if that table exists
-   - `requirements-dev.txt` — append if it exists
-   - Otherwise mention to the user that they need to install it manually
-5. Tell the user to run `pre-commit install` in the source project root to activate the hook (don't run it yourself — that's the source repo, not the docs repo, and it modifies their git hooks).
+- **`tsdoc-coverage` package** (if the user prefers a dedicated tool): npm install `tsdoc-coverage` as a dev dep and wire it as the hook entry instead. Threshold defaults to 80% to match the Python side.
 
-### Phase 11 — Summary
+In both stacks: show the user the exact config diff before writing. The pre-commit hook lives in the **source repo**, not the docs repo — extra caution since it's a different project.
 
-Print a 6–10 line markdown summary:
+### Phase 13 — Summary
 
-```
-## Set up complete
-
-**Configured for**: <package> at <path>
-**Modules**: <count> · <green/yellow/red breakdown>
-**Docstring style**: <style> (<confidence>)
-**Mode**: <motion> · <credit> · <version chip status>
-
-**Files updated**:
-- scripts/python-autodoc.json
-- astro.config.mjs
-- package.json
-<if hook installed:>
-- <source-path>/.pre-commit-config.yaml (added interrogate hook)
-- <source-path>/pyproject.toml (added interrogate to dev deps)
-
-<if Phase 9 ran:>
-**Generated**: <count> API pages in src/content/docs/api/
-
-**Next**:
-1. `bun dev`
-2. Visit /api/ to see the generated pages
-3. Address any red-coverage modules in your source, then re-run `bun run docs:python`
-<if hook installed:>
-4. `cd <source-path> && pre-commit install` to activate the docstring hook
-```
+6–10 line markdown summary covering: detected stacks, what got wired up per stack, logo update, mode (motion/credit/version), files updated, generated counts (if Phase 11 ran), next steps.
 
 ## Idempotency
 
 - Don't duplicate sidebar entries — check before adding.
-- Don't append to `modules` array — replace cleanly.
+- Don't append to `modules`/`entryPoints` arrays — replace cleanly.
 - Don't add a second `abstractData(...)` call — update the existing one.
-- Don't add a second interrogate hook to `.pre-commit-config.yaml` — check first.
 - Don't overwrite content under `src/content/docs/` (only `api/` pages, regenerated by the script).
+- Don't add a second logo line — replace.
 
 ## Out of scope (this round)
 
-- TypeScript/TypeDoc autodoc
-- Next.js / TanStack / OpenAPI / Prisma / Drizzle
-- Architecture diagrams
-- README/CHANGELOG/ADR import
-- Forcing the docs build to fail on coverage drop (deliberate — coverage policy belongs to the source project's pre-commit hook, not the docs build)
-- Auto-applying a pydoc-markdown processor pipeline based on detected style (CLI doesn't support it; would require switching to YAML config)
+- TanStack route detection auto-config (recipe-only)
+- Next.js route map auto-config (recipe-only)
+- Prisma schema-doc auto-config (recipe-only)
+- Drizzle schema-doc auto-config (recipe-only — no mature tooling)
+- README/CHANGELOG/ADR auto-import into the sidebar
 
 ## Files this skill reads / writes
 
-**Reads:** docs project's `package.json`, `astro.config.mjs`; source project's `pyproject.toml`, `setup.py`, source tree, existing `.pre-commit-config.yaml`.
+**Reads (docs project):** `package.json`, `astro.config.mjs`, `src/assets/`.
+**Reads (source project):** `pyproject.toml`, `setup.py`, source tree, `tsconfig.json`, `next.config.*`, dependency manifests, schema files, OpenAPI specs.
 
-**Writes (docs project):** `scripts/python-autodoc.json`, `astro.config.mjs` (edits), `package.json` (scripts only).
+**Writes (docs project):** `scripts/python-autodoc.json`, `scripts/ts-autodoc.json`, `astro.config.mjs` (edits), `package.json` (scripts only).
 
-**Writes (source project, only with Phase 10 consent):** `.pre-commit-config.yaml`, `pyproject.toml` (dev deps section), `requirements-dev.txt`.
+**Writes (source project, with explicit pre-commit consent only):** `.pre-commit-config.yaml`, `pyproject.toml` (dev deps section), `requirements-dev.txt`, or `package.json` (TS dev deps for `tsdoc-coverage` if chosen).
 
 ## Notes for the agent
 
 - Be conservative with edits. Show diffs in your reasoning before writing.
-- Use `Edit` for in-place updates. Use `Write` for `python-autodoc.json` (full replace).
-- Phase 10 modifies a different repo than the docs project — extra caution. Show the user exact diffs before applying.
-- If interrogate isn't installed in the source's Python env, the audit falls back to AST. Note in the summary that interrogate would give richer reports.
+- Phase 12 modifies a different repo than the docs project — extra caution.
+- For TypeScript: TypeDoc requires `typescript` AND `typedoc` AND `typedoc-plugin-markdown`. If any are missing, the orchestrator will tell the user via the script output. Don't try to install them yourself unless the user explicitly asks.
+- For OpenAPI: prefer `@astrojs/starlight-openapi` (mature plugin) over building from scratch.
 - Keep conversation tight: detection in 1–3 sentences, audit table 5–8 lines, questions one round at a time, summary 6–10 lines.
+
+---
+
+## Docs Author workflow (`abstract-data-docs-author`)
+
+### When this applies
+
+Read a project's source code and write substantive narrative documentation alongside the auto-generated API reference. Use when the user says "flesh out the docs", "write better docs", "the API pages are too thin", "enrich the docs", "author the docs", "explain this codebase", "fill out the documentation", "the autodoc pages need more context", or similar phrases inside a project that uses @abstractdata/starlight-theme. Typically invoked by abstract-data-setup after generators have produced bare-signatures pages, but can also be invoked standalone when a user says their docs are too sparse.
+
+### Procedure
+
+# Abstract Data Documentation Theme — Docs Author
+
+Read a project's source code and *write* documentation. Complements the auto-generated mechanical API reference (signatures, type hints, structure produced by pydoc-markdown / TypeDoc) by adding narrative prose, motivation, examples, and cross-references — the things mechanical autodoc can never produce well, especially when the source's docstrings are thin.
+
+This skill **enriches**, never **replaces**, the mechanical autodoc output. Always preserve the auto-generated signatures section. Layer prose above it.
+
+## When to invoke
+
+Run this skill when:
+
+- The user says "flesh out the docs", "write better docs", "the API pages are too thin", "enrich the docs", or similar.
+- The `abstract-data-setup` skill has just finished generating mechanical autodoc pages that read as terse/empty.
+- The user has run `bun run docs:python` (or `docs:ts`) and asks "now make these readable."
+
+If the cwd doesn't have `@abstractdata/starlight-theme` in `package.json` deps, stop and point the user at `bun create @abstractdata/docs`. If `src/content/docs/api/` doesn't exist or is empty, run the setup skill first (or tell the user to).
+
+## Operating principles
+
+1. **Enrich, don't replace.** Always preserve the existing auto-generated content (signatures, type hints, structure). Layer your prose *before* it (as a "Module overview" preface) or *after* it (as "Examples", "Related", "See also" sections). Never delete the mechanical scaffold.
+
+2. **Be honest about uncertainty.** If you're inferring intent from a function name without good context, say so. Phrases like "appears to handle…" are better than confident wrong claims.
+
+3. **Read tests for examples.** If the project has tests, they're the most reliable source of usage patterns. Quote test code (lightly cleaned up) for examples whenever possible — it's true by construction.
+
+4. **Token-budget discipline.** Don't try to read the whole codebase in one pass. Loop module by module, smallest first. Each iteration's context is just one module's source + that module's existing autodoc page. For 30-module projects, that's 30 small conversations, not one giant one.
+
+5. **Idempotent.** If a page already has an "Overview" preface (you wrote one before), refresh it rather than appending a second. Look for marker comments or distinctive heading patterns.
+
+6. **Don't hallucinate features.** If the source code doesn't do something, don't write that it does. The reader will trust your prose; lying is worse than terse pages.
+
+## Workflow
+
+### Phase 1 — Discover the project
+
+Read these files (top-down, bail if absent):
+
+- `package.json` — confirm `@abstractdata/starlight-theme` dep
+- `astro.config.mjs` — confirm Starlight project
+- `scripts/python-autodoc.json` and/or `scripts/ts-autodoc.json` — confirm autodoc has been wired
+- `src/content/docs/api/` — list existing auto-generated pages
+- The source project's `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md` if present
+- Any `docs/adr/` directory or `ARCHITECTURE.md` — important context
+
+Note the source project root (from `searchPath` in `python-autodoc.json` or `entryPoints` in `ts-autodoc.json`). All source reads go relative to that.
+
+### Phase 1.5 — Inventory existing prose
+
+Before profiling or writing anything new, build a manifest of prose that **already exists in the source project**. Most projects have a substantial amount of usable narrative scattered across `README.md`, `CHANGELOG.md`, ADRs, and existing docstrings — rewriting it from scratch wastes tokens and risks contradicting the source's own voice.
+
+For each candidate file, read it once and produce a line-item inventory:
+
+- **`README.md`** — for each `##` section, note: heading, ~10-word summary, candidate destination. Common reuse targets:
+  - "Quick start" / "Installation" / "Getting started" → `src/content/docs/quickstart.md`
+  - "Features" / "What it does" / "Why use this" → `src/content/docs/index.mdx` hero subtitle + `concepts.md` intro
+  - "Architecture" / "How it works" / "Design" → `src/content/docs/concepts.md` body
+  - "Configuration" / "Options" → a guide or the relevant module overview
+  - "Examples" / "Usage" → split across module Example blocks
+  - "Contributing" → leave in repo, link from docs sidebar
+- **`CHANGELOG.md`** — note the most recent 1–3 entries. Don't import wholesale; harvest noteworthy feature additions for the concepts page ("Recent additions") or for module overviews ("Added in v0.4 to address …").
+- **`docs/adr/*.md`** or **`ARCHITECTURE.md`** — for each ADR, note: title, decision, the 1–2 sentence rationale. ADRs are *gold* for the `concepts.md` page — they explain *why* the architecture looks the way it does. Quote the rationale, link out to the ADR for full context.
+- **`CONTRIBUTING.md`** — usually stays in repo; mine for any "How to add a new X" sections that should become how-to guides under `src/content/docs/guides/`.
+- **Existing module docstrings** — even if the autodoc page reads as thin, the source `.py` / `.ts` may have a leading module docstring with usable framing. Note which modules have them (Phase 6 will reuse the wording verbatim where appropriate).
+
+Output the inventory as a brief plan to memory before moving on:
+
+```
+README sections worth lifting:
+  - "## Quick start" → quickstart.md (verbatim, light edit)
+  - "## How it works" → concepts.md intro (paraphrase)
+  - "## Why httpx?" → core/http_scan module overview (paraphrase + link to ADR-007)
+
+CHANGELOG highlights:
+  - v0.4: Added BaseHttpScanModule (link to ADR-007)
+  - v0.3: AI integration via Ollama (concepts.md "Optional integrations" section)
+
+ADRs:
+  - ADR-001 "Use httpx not requests" → quote in concepts.md
+  - ADR-007 "BaseHttpScanModule" → quote in core/http_scan overview
+
+Modules with usable existing docstrings: auditkit.core, auditkit.transport.curl_impersonate
+```
+
+When you reach Phases 5 and 6, **prefer lifting existing prose** (with light cleanup and proper attribution if it's a paraphrase from an ADR) over fabricating new wording. Always offer the user a side-by-side: "README says X, ADR says Y, here's the merged version — keep, edit, or rewrite?"
+
+If the source project has *no* README beyond a one-liner and *no* ADRs, say so up front — the user should know the docs-author run will need to invent more, and that voice will be yours rather than the project's.
+
+### Phase 2 — Profile the project
+
+Spend 1–2 conversation turns building a project profile. Not a deep code read yet — orientation only:
+
+- Read `README.md` (one document) — extract the elevator pitch, the core problem the project solves, the primary user.
+- Read top-level CLI entry points or top-level `index.ts` exports — understand the public surface.
+- Read `pyproject.toml` / `package.json` description fields and keywords.
+- Skim test directory names (don't read full tests yet) — understand testing organization.
+
+Write a **3–5 sentence project profile** to memory. This profile is the lens for every module-level write that follows. Examples:
+
+> "auditkit is a security-audit CLI that scans websites for misconfigurations across 9 categories. It's modular: each scan module inherits from `ScanModule` and runs async via httpx. Heavy use of pydantic for data validation. AI integration via Ollama is optional."
+
+Reuse this voice in every module overview you write.
+
+### Phase 3 — Build the module map
+
+For each existing page in `src/content/docs/api/`:
+
+1. Read the page (current state — may be terse/empty).
+2. Read the corresponding source file from the source project.
+3. Note: file size, public symbols, imports (which other modules does it depend on?), test coverage (is there a `test_<module>.py`?).
+
+Build an in-memory map: `{ pageName, sourcePath, publicSymbols, dependencies, hasTests, currentPageBytes }`. Smallest pages first — they're cheapest to enrich and the user gets early wins.
+
+### Phase 4 — Find usage examples
+
+For each module with tests, locate 1–2 representative test cases. Look for:
+
+- Tests with descriptive names (`test_login_browser_with_valid_credentials`)
+- Tests that exercise the public API directly (not internal helpers)
+- Short tests (under ~20 lines) — easier to inline as examples
+
+Note these locations. You'll quote them in Phase 6.
+
+### Phase 5 — Write narrative pages
+
+Before per-module work, write the high-leverage **narrative pages** that don't exist yet. Check first — if `src/content/docs/concepts.md` (or similar) already has user-written content, leave it alone. Otherwise, draft:
+
+- **`src/content/docs/concepts.md`** — architecture overview. 300–600 words. Source the structure from imports + ADRs + your project profile. Cover: core abstractions, data flow, key types, extension points.
+
+- **`src/content/docs/guides/getting-started.md`** *(if not present)* — distilled from README quickstart. Should be hands-on, end with the user having run a thing.
+
+- **`src/content/docs/guides/<workflow>.md`** — for each repeated test pattern, write a how-to. Examples: "Adding a new scan module", "Configuring authentication", "Writing custom callbacks". One workflow per file.
+
+Don't generate every possible guide — pick the 2–3 most valuable based on the project profile. Quality over quantity.
+
+After writing, update `astro.config.mjs` sidebar to add a "Concepts" / "Guides" group if not present.
+
+### Phase 6 — Module-by-module enrichment loop
+
+For each module page in your map, smallest-first:
+
+1. **Read the source file** (the actual `.py` / `.ts` file, not just docstrings). Understand what it does.
+2. **Detect existing enrichment.** If the page already has a `<!-- abstract-data-docs-author:overview -->` comment marker, you wrote a preface before — refresh it instead of duplicating.
+3. **Write a "Module overview" preface** (150–300 words) covering:
+   - **What this module is** — one-sentence description tied to the project profile
+   - **Why it exists** — what role does it play in the larger system
+   - **When to use it** — typical entry point or trigger
+   - **Key types or functions** — a 3–5 bullet list pointing at the most important public symbols
+4. **Add an "Example" section** quoting a test case (cleaned up if needed). Wrap in a code block with the right language.
+5. **Add a "Related" footer** linking 2–3 sibling modules (from the imports map). Format: `- [`module.name`](/api/module_name/)` — one-line description.
+6. **Inject** the preface above the existing auto-generated content. Keep the example and related sections after.
+7. **Save** with the marker comments so the next run is idempotent:
+
+```markdown
+<!-- abstract-data-docs-author:overview -->
+[your preface]
+<!-- /abstract-data-docs-author:overview -->
+
+[existing auto-generated content untouched]
+
+<!-- abstract-data-docs-author:example -->
+[example section]
+<!-- /abstract-data-docs-author:example -->
+
+<!-- abstract-data-docs-author:related -->
+[related links]
+<!-- /abstract-data-docs-author:related -->
+```
+
+After each module, **stop and confirm with the user** before continuing. Show the diff. Let them approve, edit, or reject. This is mandatory — never bulk-apply prose without per-module review.
+
+### Phase 7 — Cross-reference pass
+
+After all module pages enriched (or as many as the user opted into), do one final pass to cross-reference:
+
+- Inside any page, if you mention another module by name, link it: ``` `auditkit.config.AuditConfig` ``` → `[\`auditkit.config.AuditConfig\`](/api/auditkit_config/#auditconfig-objects)`.
+- Add a "Used by" reverse-lookup section to high-leverage modules — "this is imported by X, Y, Z".
+
+This is the polish pass. Skip if the user is fatigued.
+
+### Phase 8 — Summary
+
+Write a 6–10 line markdown summary covering:
+
+- Modules enriched / skipped
+- Narrative pages written
+- Total prose added (rough word count)
+- Any modules where you got stuck or recommended manual follow-up
+- Suggested next step (e.g., "Run `bun dev` and walk the new pages")
+
+## Templates
+
+Use these as starting points, not rigid forms.
+
+### Module overview template (Python)
+
+```markdown
+**What this is:** [One-sentence description in the project's voice. E.g., "OAuth lifecycle helpers for jre-vidget's YouTube integration."]
+
+**Why it exists:** [What role does it play. E.g., "Isolates browser-based auth from the CLI surface — no Rich, no video logic, no terminal state."]
+
+**When to use it:** [Typical entry point. E.g., "Call `login_browser()` once during onboarding to mint a refresh token. Subsequent runs use `get_credentials()` to refresh on demand."]
+
+**Key surfaces:**
+- `login_browser(client_id, client_secret)` — interactive OAuth flow, returns `AuthConfig`
+- `get_credentials(auth)` — refreshes on demand, returns `google.oauth2.credentials.Credentials`
+- `AuthError` — raised when credentials are missing or unrefreshable
+```
+
+### Class/function preface template
+
+For pages that document a single class or function (rare with pydoc-markdown's per-module output but happens), use:
+
+```markdown
+**Purpose:** [why this exists]
+
+**Key behavior:** [what it does, 2-3 sentences]
+
+**Common usage:**
+```python
+[short example]
+```
+```
+
+### Example block template
+
+```markdown
+## Example
+
+[1-line context: "Logging in for the first time:"]
+
+```python
+[10-15 lines of cleaned test code or synthesized usage]
+```
+
+[1-line outcome: "After this, `auth.refresh_token` is set and persisted via `write_config_safely`."]
+```
+
+## What this skill does NOT do
+
+- **Doesn't rewrite source code.** That's a different operation. If the user wants to add docstrings to the source, that's `abstract-data-setup`'s Phase 4 territory (audit + suggest enrichment), not this skill's.
+- **Doesn't generate API reference from scratch.** That's pydoc-markdown / TypeDoc's job. This skill *layers on top of* that output.
+- **Doesn't guess at private symbols.** Only document the public API surface. Helper functions with leading underscores are skipped.
+- **Doesn't auto-commit.** Writes files, leaves git up to the user.
+
+## Files this skill reads
+
+- The docs project's `package.json`, `astro.config.mjs`, `scripts/python-autodoc.json` / `scripts/ts-autodoc.json`, existing `src/content/docs/api/*.md`.
+- The source project's `README.md`, source files (`.py` / `.ts`), test files, ADRs, `pyproject.toml`/`package.json`.
+
+## Files this skill writes
+
+- `src/content/docs/api/*.md` — enriched (preface + example + related sections injected around existing autodoc).
+- `src/content/docs/concepts.md` — narrative architecture overview (only if not already user-authored).
+- `src/content/docs/guides/*.md` — per-workflow how-to (only if not already user-authored).
+- `astro.config.mjs` — sidebar updates to add new groups for Concepts / Guides.
+
+## Notes for the agent
+
+- **Never bulk-apply.** Always confirm per-module before writing.
+- **Token discipline.** Read one module's source per loop iteration. Don't try to hold the whole codebase in context.
+- **Preserve markers.** The HTML comment markers (`<!-- abstract-data-docs-author:overview -->`) are how the next run finds and refreshes existing prose. Don't strip them.
+- **When stuck:** if you can't form a coherent preface for a module (the source is too thin or too obscure), say so and skip. Don't write nonsense.
+- **The mechanical autodoc is the floor.** Your job is to raise the ceiling.
+
+---

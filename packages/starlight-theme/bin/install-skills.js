@@ -25,6 +25,7 @@ import { createInterface } from 'node:readline/promises';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = resolve(__dirname, '..');
 const SKILLS_SRC = resolve(PACKAGE_ROOT, 'skills');
+const SCRIPTS_SRC = resolve(PACKAGE_ROOT, 'scripts');
 const PROJECT_ROOT = getCwd();
 
 const c = {
@@ -85,7 +86,7 @@ if (!allDeps['@abstractdata/starlight-theme']) {
 // ─── Mapping ───────────────────────────────────────────────────────
 const MAPPINGS = [
   {
-    label: 'Claude Code',
+    label: 'Claude Code skill',
     detect: () =>
       existsSync(resolve(PROJECT_ROOT, '.claude')) ||
       existsSync(resolve(PROJECT_ROOT, 'CLAUDE.md')),
@@ -93,16 +94,79 @@ const MAPPINGS = [
     to: '.claude/skills/abstract-data-setup/SKILL.md',
   },
   {
-    label: 'Cursor',
+    label: 'Claude Code handshake (CLAUDE.md)',
+    detect: () => existsSync(resolve(PROJECT_ROOT, 'CLAUDE.md')),
+    from: 'claude/CLAUDE.md',
+    to: 'CLAUDE.md',
+  },
+  {
+    label: 'Cursor rule',
     detect: () => existsSync(resolve(PROJECT_ROOT, '.cursor')),
     from: 'cursor/abstract-data-setup.mdc',
     to: '.cursor/rules/abstract-data-setup.mdc',
   },
   {
-    label: 'GitHub Copilot',
+    label: 'Cursor welcome rule (always-apply handshake)',
+    detect: () => existsSync(resolve(PROJECT_ROOT, '.cursor')),
+    from: 'cursor/welcome.mdc',
+    to: '.cursor/rules/welcome.mdc',
+  },
+  // abstract-data-docs-author skill — read source code, write narrative docs
+  {
+    label: 'Claude Code docs-author skill',
+    detect: () =>
+      existsSync(resolve(PROJECT_ROOT, '.claude')) ||
+      existsSync(resolve(PROJECT_ROOT, 'CLAUDE.md')),
+    from: 'claude/abstract-data-docs-author/SKILL.md',
+    to: '.claude/skills/abstract-data-docs-author/SKILL.md',
+  },
+  {
+    label: 'Cursor docs-author rule',
+    detect: () => existsSync(resolve(PROJECT_ROOT, '.cursor')),
+    from: 'cursor/abstract-data-docs-author.mdc',
+    to: '.cursor/rules/abstract-data-docs-author.mdc',
+  },
+  {
+    label: 'GitHub Copilot instructions (covers both skills)',
     detect: () => existsSync(resolve(PROJECT_ROOT, '.github')),
     from: 'github/copilot-instructions.md',
     to: '.github/copilot-instructions.md',
+  },
+  // Python autodoc scripts — sourced from the package's `scripts/` dir
+  // (not `skills/`) so their `from` paths resolve relative to PACKAGE_ROOT
+  // via the `fromBase` field below.
+  {
+    label: 'Python autodoc orchestrator (build-python-docs.mjs)',
+    detect: () => existsSync(resolve(PROJECT_ROOT, 'pyproject.toml')) ||
+                  existsSync(resolve(PROJECT_ROOT, 'setup.py')),
+    fromBase: 'scripts',
+    from: 'build-python-docs.mjs',
+    to: 'scripts/build-python-docs.mjs',
+  },
+  {
+    label: 'Python autodoc config (python-autodoc.json)',
+    detect: () => existsSync(resolve(PROJECT_ROOT, 'pyproject.toml')) ||
+                  existsSync(resolve(PROJECT_ROOT, 'setup.py')),
+    fromBase: 'scripts',
+    from: 'python-autodoc.json',
+    to: 'scripts/python-autodoc.json',
+  },
+  // TypeScript autodoc scripts — only offered when a TS library shape is detected
+  {
+    label: 'TypeScript autodoc orchestrator (build-ts-docs.mjs)',
+    detect: () => existsSync(resolve(PROJECT_ROOT, 'tsconfig.json')) &&
+                  existsSync(resolve(PROJECT_ROOT, 'package.json')),
+    fromBase: 'scripts',
+    from: 'build-ts-docs.mjs',
+    to: 'scripts/build-ts-docs.mjs',
+  },
+  {
+    label: 'TypeScript autodoc config (ts-autodoc.json)',
+    detect: () => existsSync(resolve(PROJECT_ROOT, 'tsconfig.json')) &&
+                  existsSync(resolve(PROJECT_ROOT, 'package.json')),
+    fromBase: 'scripts',
+    from: 'ts-autodoc.json',
+    to: 'scripts/ts-autodoc.json',
   },
 ];
 
@@ -121,7 +185,11 @@ const ask = async (prompt) => (await rl.question(prompt)).trim().toLowerCase();
 
 const choices = [];
 for (const m of MAPPINGS) {
-  const fromPath = resolve(SKILLS_SRC, m.from);
+  // Per-mapping source root: defaults to skills/, overridable via fromBase
+  // (used by the Python autodoc scripts which live in the package's
+  // scripts/ directory, not skills/).
+  const sourceBase = m.fromBase === 'scripts' ? SCRIPTS_SRC : SKILLS_SRC;
+  const fromPath = resolve(sourceBase, m.from);
   const toPath = resolve(PROJECT_ROOT, m.to);
   if (!existsSync(fromPath)) {
     log(`${c.dim}—${c.reset} skip ${m.label} (not present in package skills/)`);

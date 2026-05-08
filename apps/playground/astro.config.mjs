@@ -5,7 +5,8 @@ import { abstractDataThemes } from '@abstractdata/starlight-theme/shiki';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://docs.abstractdata.io',
+  site: 'https://abstract-data.github.io',
+  base: process.env.BASE_URL ?? '/',
   integrations: [
     starlight({
       title: 'Abstract Data',

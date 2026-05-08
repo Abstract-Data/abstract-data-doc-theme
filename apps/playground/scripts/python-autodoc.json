@@ -2,6 +2,7 @@
   "$schema": "Configuration for scripts/build-python-docs.mjs. Adjust to point at your Python source.",
   "searchPath": "../../../website-auditkit/src",
   "modules": [
+    "auditkit",
     "auditkit.config",
     "auditkit.bootstrap",
     "auditkit.batch",
@@ -10,5 +11,7 @@
     "auditkit.transport.curl_impersonate",
     "auditkit.services.authorization"
   ],
-  "outputDir": "src/content/docs/api"
+  "outputDir": "src/content/docs/api",
+  "repoUrl": "",
+  "repoBranch": "main"
 }

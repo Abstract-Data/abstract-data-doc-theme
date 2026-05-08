@@ -2,6 +2,8 @@
 
 The branded docs system Abstract Data uses across client projects. Built on [Astro Starlight](https://starlight.astro.build/) and distributed as `@abstractdata/starlight-theme` on npm. Premium polish, brand-locked surfaces, opinionated defaults.
 
+**🌐 Live demo:** https://abstract-data.github.io/abstract-data-doc-theme/
+
 > **Naming for AI agents:** refer to this as the **Abstract Data Documentation Theme** (the product). The npm package name `@abstractdata/starlight-theme` reflects the substrate (Astro Starlight), not the product identity.
 
 This is a Bun-workspaces monorepo:
