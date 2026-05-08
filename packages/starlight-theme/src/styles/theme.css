@@ -13,463 +13,475 @@
 /* ------------------------------------------------------------
    Palette tokens — overridden onto Starlight's CSS vars
    ------------------------------------------------------------ */
-:root {
-  /* Brand atoms (always available regardless of theme) */
-  --ad-cyan: #00d9ff;
-  --ad-cyan-deep: #007a8e;
-  --ad-gold: #d4af37;
-  --ad-gold-deep: #8a6d1f;
-  --ad-burgundy: #8b2635;
-  --ad-burgundy-deep: #7a1f2c;
-  --ad-magenta: #ff00de;
-  --ad-charcoal: #0a0a0a;
-  --ad-surface-dark: #101116;
-  --ad-cream: #faf7f2;
-
-  /* Typography (variable family names from @fontsource-variable; static name
-     fallback in case a consumer re-pins to non-variable @fontsource) */
-  --sl-font: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
-  --sl-font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-  --ad-font-display: 'Orbitron Variable', 'Orbitron', sans-serif;
-
-  /* Sizing tweaks */
-  --sl-content-width: 52rem;
-}
 
 /* ------------------------------------------------------------
-   Dark theme (HUD Dark / Calm Dark — same palette)
+   Cascade layer declaration — keep above the wrapped block.
+   The whole theme lives inside `@layer abstract-data` so any
+   unlayered user CSS in `customCss` automatically wins without
+   needing !important. Order: Starlight ships its `starlight`
+   layer (0.34+); we sit just above it; user CSS sits above us.
    ------------------------------------------------------------ */
-:root[data-theme='dark'] {
-  --sl-color-accent-low: rgba(0, 217, 255, 0.10);
-  --sl-color-accent: var(--ad-cyan);
-  --sl-color-accent-high: var(--ad-cyan);
-  --sl-color-text-accent: var(--ad-cyan);
+@layer abstract-data;
 
-  --sl-color-bg: var(--ad-charcoal);
-  --sl-color-bg-nav: var(--ad-surface-dark);
-  --sl-color-bg-sidebar: var(--ad-surface-dark);
-  --sl-color-bg-inline-code: #14151a;
-  --sl-color-hairline: #2a2c34;
-  --sl-color-hairline-light: #25262d;
-  --sl-color-hairline-shade: #1a1b20;
+@layer abstract-data {
+  :root {
+    /* Brand atoms (always available regardless of theme) */
+    --ad-cyan: #00d9ff;
+    --ad-cyan-deep: #007a8e;
+    --ad-gold: #d4af37;
+    --ad-gold-deep: #8a6d1f;
+    --ad-burgundy: #8b2635;
+    --ad-burgundy-deep: #7a1f2c;
+    --ad-magenta: #ff00de;
+    --ad-charcoal: #0a0a0a;
+    --ad-surface-dark: #101116;
+    --ad-cream: #faf7f2;
 
-  --sl-color-text: #f0f0f5;
-  --sl-color-text-invert: var(--ad-charcoal);
-  --sl-color-gray-1: #ffffff;
-  --sl-color-gray-2: #d8d8df;
-  --sl-color-gray-3: #b8b8c0;
-  --sl-color-gray-4: #8a8a93;
-  --sl-color-gray-5: #5a5b62;
-  --sl-color-gray-6: #2a2c34;
+    /* Typography (variable family names from @fontsource-variable; static name
+       fallback in case a consumer re-pins to non-variable @fontsource) */
+    --sl-font: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+    --sl-font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    --ad-font-display: 'Orbitron Variable', 'Orbitron', sans-serif;
 
-  --ad-text-dim: #8a8a93;
-  --ad-callout-cyan-bg: rgba(0, 217, 255, 0.06);
-  --ad-callout-gold-bg: rgba(212, 175, 55, 0.06);
-  --ad-callout-burgundy-bg: rgba(192, 74, 91, 0.08);
-}
+    /* Sizing tweaks */
+    --sl-content-width: 52rem;
+  }
 
-/* ------------------------------------------------------------
-   Light theme (cream / burgundy / deeper teal)
-   ------------------------------------------------------------ */
-:root[data-theme='light'] {
-  --sl-color-accent-low: rgba(0, 122, 142, 0.10);
-  --sl-color-accent: var(--ad-cyan-deep);
-  --sl-color-accent-high: var(--ad-cyan-deep);
-  --sl-color-text-accent: var(--ad-cyan-deep);
+  /* ------------------------------------------------------------
+     Dark theme (HUD Dark / Calm Dark — same palette)
+     ------------------------------------------------------------ */
+  :root[data-theme='dark'] {
+    --sl-color-accent-low: rgba(0, 217, 255, 0.10);
+    --sl-color-accent: var(--ad-cyan);
+    --sl-color-accent-high: var(--ad-cyan);
+    --sl-color-text-accent: var(--ad-cyan);
 
-  --sl-color-bg: var(--ad-cream);
-  --sl-color-bg-nav: #ffffff;
-  --sl-color-bg-sidebar: #ffffff;
-  --sl-color-bg-inline-code: #f4efe5;
-  --sl-color-hairline: #d8d0bf;
-  --sl-color-hairline-light: #e6dfd1;
-  --sl-color-hairline-shade: #ece5d5;
+    --sl-color-bg: var(--ad-charcoal);
+    --sl-color-bg-nav: var(--ad-surface-dark);
+    --sl-color-bg-sidebar: var(--ad-surface-dark);
+    --sl-color-bg-inline-code: #14151a;
+    --sl-color-hairline: #2a2c34;
+    --sl-color-hairline-light: #25262d;
+    --sl-color-hairline-shade: #1a1b20;
 
-  --sl-color-text: #18181c;
-  --sl-color-text-invert: #ffffff;
-  --sl-color-gray-1: #0a0a0a;
-  --sl-color-gray-2: #18181c;
-  --sl-color-gray-3: #2a2a30;
-  --sl-color-gray-4: #5e5e66;
-  --sl-color-gray-5: #8e8a7e;
-  --sl-color-gray-6: #d8d0bf;
+    --sl-color-text: #f0f0f5;
+    --sl-color-text-invert: var(--ad-charcoal);
+    --sl-color-gray-1: #ffffff;
+    --sl-color-gray-2: #d8d8df;
+    --sl-color-gray-3: #b8b8c0;
+    --sl-color-gray-4: #8a8a93;
+    --sl-color-gray-5: #5a5b62;
+    --sl-color-gray-6: #2a2c34;
 
-  --ad-text-dim: #5e5e66;
-  --ad-callout-cyan-bg: rgba(0, 122, 142, 0.06);
-  --ad-callout-gold-bg: rgba(138, 109, 31, 0.08);
-  --ad-callout-burgundy-bg: rgba(122, 31, 44, 0.06);
-}
+    --ad-text-dim: #8a8a93;
+    --ad-callout-cyan-bg: rgba(0, 217, 255, 0.06);
+    --ad-callout-gold-bg: rgba(212, 175, 55, 0.06);
+    --ad-callout-burgundy-bg: rgba(192, 74, 91, 0.08);
+  }
 
-/* ------------------------------------------------------------
-   Display typography — Orbitron on hero + h1/h2 only
-   (h3+ stays in Inter for body readability)
-   ------------------------------------------------------------ */
-.sl-markdown-content h1,
-.sl-markdown-content h2,
-header.header .site-title,
-.sidebar-pane .group-label,
-.content-panel h1[data-page-title] {
-  font-family: var(--ad-font-display);
-  letter-spacing: 0.01em;
-  font-weight: 700;
-}
+  /* ------------------------------------------------------------
+     Light theme (cream / burgundy / deeper teal)
+     ------------------------------------------------------------ */
+  :root[data-theme='light'] {
+    --sl-color-accent-low: rgba(0, 122, 142, 0.10);
+    --sl-color-accent: var(--ad-cyan-deep);
+    --sl-color-accent-high: var(--ad-cyan-deep);
+    --sl-color-text-accent: var(--ad-cyan-deep);
 
-/* Site title in top nav */
-header.header .site-title {
-  font-size: 0.85rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
+    --sl-color-bg: var(--ad-cream);
+    --sl-color-bg-nav: #ffffff;
+    --sl-color-bg-sidebar: #ffffff;
+    --sl-color-bg-inline-code: #f4efe5;
+    --sl-color-hairline: #d8d0bf;
+    --sl-color-hairline-light: #e6dfd1;
+    --sl-color-hairline-shade: #ece5d5;
 
-/* Sidebar group labels */
-.sidebar-pane .group-label,
-.sidebar-pane .group-label > span {
-  font-family: var(--ad-font-display);
-  font-size: 0.7rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
+    --sl-color-text: #18181c;
+    --sl-color-text-invert: #ffffff;
+    --sl-color-gray-1: #0a0a0a;
+    --sl-color-gray-2: #18181c;
+    --sl-color-gray-3: #2a2a30;
+    --sl-color-gray-4: #5e5e66;
+    --sl-color-gray-5: #8e8a7e;
+    --sl-color-gray-6: #d8d0bf;
 
-/* ------------------------------------------------------------
-   H1 signature: cyan→gold gradient bracket bar on the left
-   ------------------------------------------------------------ */
-.sl-markdown-content > h1:first-child,
-.content-panel h1[data-page-title],
-.hero h1 {
-  position: relative;
-  padding-left: 14px;
-}
-.sl-markdown-content > h1:first-child::before,
-.content-panel h1[data-page-title]::before,
-.hero h1::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.3em;
-  bottom: 0.3em;
-  width: 3px;
-  background: linear-gradient(180deg, var(--ad-cyan), var(--ad-gold));
-}
-:root[data-theme='light'] .sl-markdown-content > h1:first-child::before,
-:root[data-theme='light'] .content-panel h1[data-page-title]::before,
-:root[data-theme='light'] .hero h1::before {
-  background: linear-gradient(180deg, var(--ad-cyan-deep), var(--ad-burgundy));
-}
+    --ad-text-dim: #5e5e66;
+    --ad-callout-cyan-bg: rgba(0, 122, 142, 0.06);
+    --ad-callout-gold-bg: rgba(138, 109, 31, 0.08);
+    --ad-callout-burgundy-bg: rgba(122, 31, 44, 0.06);
+  }
 
-/* ------------------------------------------------------------
-   Inline code — gold on dark, burgundy on light
-   ------------------------------------------------------------ */
-.sl-markdown-content :not(pre) > code {
-  color: var(--ad-gold);
-  border: 1px solid var(--sl-color-hairline);
-  border-radius: 4px;
-  padding: 1px 6px;
-  font-size: 0.9em;
-}
-:root[data-theme='light'] .sl-markdown-content :not(pre) > code {
-  color: var(--ad-burgundy-deep);
-}
+  /* ------------------------------------------------------------
+     Display typography — Orbitron on hero + h1/h2 only
+     (h3+ stays in Inter for body readability)
+     ------------------------------------------------------------ */
+  .sl-markdown-content h1,
+  .sl-markdown-content h2,
+  header.header .site-title,
+  .sidebar-pane .group-label,
+  .content-panel h1[data-page-title] {
+    font-family: var(--ad-font-display);
+    letter-spacing: 0.01em;
+    font-weight: 700;
+  }
 
-/* ------------------------------------------------------------
-   Callouts (asides) — branded variants
-   ------------------------------------------------------------ */
-.starlight-aside {
-  border-left-width: 3px;
-  border-radius: 8px;
-  background: var(--ad-callout-cyan-bg);
-}
-.starlight-aside--tip { border-color: var(--ad-cyan); background: var(--ad-callout-cyan-bg); }
-.starlight-aside--note { border-color: var(--ad-cyan); background: var(--ad-callout-cyan-bg); }
-.starlight-aside--caution { border-color: var(--ad-gold); background: var(--ad-callout-gold-bg); }
-.starlight-aside--danger { border-color: var(--ad-burgundy); background: var(--ad-callout-burgundy-bg); }
-:root[data-theme='light'] .starlight-aside--tip,
-:root[data-theme='light'] .starlight-aside--note { border-color: var(--ad-cyan-deep); }
-:root[data-theme='light'] .starlight-aside--caution { border-color: var(--ad-gold-deep); }
-:root[data-theme='light'] .starlight-aside--danger { border-color: var(--ad-burgundy-deep); }
+  /* Site title in top nav */
+  header.header .site-title {
+    font-size: 0.85rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
 
-.starlight-aside__title {
-  font-family: var(--ad-font-display);
-  font-size: 0.7rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
+  /* Sidebar group labels */
+  .sidebar-pane .group-label,
+  .sidebar-pane .group-label > span {
+    font-family: var(--ad-font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
 
-/* ------------------------------------------------------------
-   Code blocks — bracket dot indicator + cyan border accent
-   ------------------------------------------------------------ */
-.expressive-code .frame.is-terminal,
-.expressive-code .frame.has-title {
-  border: 1px solid var(--sl-color-hairline);
-  border-radius: 8px;
-  overflow: hidden;
-}
-.expressive-code .frame .header {
-  font-family: var(--sl-font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--sl-color-hairline);
-}
+  /* ------------------------------------------------------------
+     H1 signature: cyan→gold gradient bracket bar on the left
+     ------------------------------------------------------------ */
+  .sl-markdown-content > h1:first-child,
+  .content-panel h1[data-page-title],
+  .hero h1 {
+    position: relative;
+    padding-left: 14px;
+  }
+  .sl-markdown-content > h1:first-child::before,
+  .content-panel h1[data-page-title]::before,
+  .hero h1::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.3em;
+    bottom: 0.3em;
+    width: 3px;
+    background: linear-gradient(180deg, var(--ad-cyan), var(--ad-gold));
+  }
+  :root[data-theme='light'] .sl-markdown-content > h1:first-child::before,
+  :root[data-theme='light'] .content-panel h1[data-page-title]::before,
+  :root[data-theme='light'] .hero h1::before {
+    background: linear-gradient(180deg, var(--ad-cyan-deep), var(--ad-burgundy));
+  }
 
-/* ------------------------------------------------------------
-   Sidebar — active item with cyan border + faint fill
-   ------------------------------------------------------------ */
-.sidebar-pane a[aria-current='page'] {
-  color: var(--ad-cyan);
-  border-left: 2px solid var(--ad-cyan);
-  background: var(--sl-color-accent-low);
-  font-weight: 500;
-}
-:root[data-theme='light'] .sidebar-pane a[aria-current='page'] {
-  color: var(--ad-cyan-deep);
-  border-left-color: var(--ad-cyan-deep);
-}
+  /* ------------------------------------------------------------
+     Inline code — gold on dark, burgundy on light
+     ------------------------------------------------------------ */
+  .sl-markdown-content :not(pre) > code {
+    color: var(--ad-gold);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.9em;
+  }
+  :root[data-theme='light'] .sl-markdown-content :not(pre) > code {
+    color: var(--ad-burgundy-deep);
+  }
 
-/* ------------------------------------------------------------
-   Search box — bracket frame motif
-   ------------------------------------------------------------ */
-site-search button[data-open-modal] {
-  border: 1px solid var(--sl-color-hairline);
-  border-radius: 6px;
-  font-family: var(--sl-font-mono);
-}
-site-search button[data-open-modal] kbd {
-  font-family: var(--sl-font-mono);
-  font-size: 0.65rem;
-}
+  /* ------------------------------------------------------------
+     Callouts (asides) — branded variants
+     ------------------------------------------------------------ */
+  .starlight-aside {
+    border-left-width: 3px;
+    border-radius: 8px;
+    background: var(--ad-callout-cyan-bg);
+  }
+  .starlight-aside--tip { border-color: var(--ad-cyan); background: var(--ad-callout-cyan-bg); }
+  .starlight-aside--note { border-color: var(--ad-cyan); background: var(--ad-callout-cyan-bg); }
+  .starlight-aside--caution { border-color: var(--ad-gold); background: var(--ad-callout-gold-bg); }
+  .starlight-aside--danger { border-color: var(--ad-burgundy); background: var(--ad-callout-burgundy-bg); }
+  :root[data-theme='light'] .starlight-aside--tip,
+  :root[data-theme='light'] .starlight-aside--note { border-color: var(--ad-cyan-deep); }
+  :root[data-theme='light'] .starlight-aside--caution { border-color: var(--ad-gold-deep); }
+  :root[data-theme='light'] .starlight-aside--danger { border-color: var(--ad-burgundy-deep); }
 
-/* ------------------------------------------------------------
-   Version chip — outlined gold pill in the header
-   (Static look. HUD layers on glitch in hud.css.)
-   ------------------------------------------------------------ */
-.ad-version-chip {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--sl-font-mono);
-  font-size: 0.7rem;
-  padding: 3px 8px;
-  margin-left: 8px;
-  color: var(--ad-gold);
-  border: 1px solid var(--ad-gold);
-  border-radius: 4px;
-  letter-spacing: 0.04em;
-  user-select: none;
-  cursor: default;
-  position: relative;
-}
-:root[data-theme='light'] .ad-version-chip {
-  color: var(--ad-gold-deep);
-  border-color: var(--ad-gold-deep);
-  background: rgba(138, 109, 31, 0.08);
-}
+  .starlight-aside__title {
+    font-family: var(--ad-font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
 
-/* ------------------------------------------------------------
-   "Built by Abstract Data" credit
-   Hidden when the plugin is configured with `credit: 'hide'`.
-   ------------------------------------------------------------ */
-.ad-credit {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--sl-color-hairline-light);
-  font-family: var(--ad-font-display);
-  font-size: 0.7rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--sl-color-gray-4);
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-.ad-credit a {
-  color: var(--ad-cyan);
-  text-decoration: none;
-  font-weight: 600;
-}
-.ad-credit a:hover { text-decoration: underline; }
-:root[data-theme='light'] .ad-credit a { color: var(--ad-cyan-deep); }
+  /* ------------------------------------------------------------
+     Code blocks — bracket dot indicator + cyan border accent
+     ------------------------------------------------------------ */
+  .expressive-code .frame.is-terminal,
+  .expressive-code .frame.has-title {
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .expressive-code .frame .header {
+    font-family: var(--sl-font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
 
-/* ------------------------------------------------------------
-   <Glitch /> base — clean render under motion: 'calm'
-   HUD layers on the actual glitch animation in hud.css.
-   ------------------------------------------------------------ */
-.ad-glitch {
-  position: relative;
-  display: inline-block;
-  font-family: var(--ad-font-display);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--ad-cyan);
-}
-:root[data-theme='light'] .ad-glitch {
-  color: var(--ad-burgundy);
-}
+  /* ------------------------------------------------------------
+     Sidebar — active item with cyan border + faint fill
+     ------------------------------------------------------------ */
+  .sidebar-pane a[aria-current='page'] {
+    color: var(--ad-cyan);
+    border-left: 2px solid var(--ad-cyan);
+    background: var(--sl-color-accent-low);
+    font-weight: 500;
+  }
+  :root[data-theme='light'] .sidebar-pane a[aria-current='page'] {
+    color: var(--ad-cyan-deep);
+    border-left-color: var(--ad-cyan-deep);
+  }
 
-/* ------------------------------------------------------------
-   Splash page hero — constrain logo width on wide screens
-   ------------------------------------------------------------ */
-.hero .hero-html img,
-.hero img[alt][src] {
-  max-width: 360px;
-  width: 100%;
-  height: auto;
-}
+  /* ------------------------------------------------------------
+     Search box — bracket frame motif
+     ------------------------------------------------------------ */
+  site-search button[data-open-modal] {
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 6px;
+    font-family: var(--sl-font-mono);
+  }
+  site-search button[data-open-modal] kbd {
+    font-family: var(--sl-font-mono);
+    font-size: 0.65rem;
+  }
 
-/* ------------------------------------------------------------
-   Hero action buttons — primary cyan, secondary gold ghost
-   (Starlight uses .sl-link-button.primary / .secondary inside .hero .actions)
-   ------------------------------------------------------------ */
-.hero .actions .sl-link-button.primary {
-  background: var(--ad-cyan);
-  color: var(--ad-charcoal);
-  border: 1px solid var(--ad-cyan);
-  font-family: var(--ad-font-display);
-  font-size: 0.8rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.hero .actions .sl-link-button.primary:hover {
-  box-shadow: 0 0 24px rgba(0, 217, 255, 0.5);
-}
-.hero .actions .sl-link-button.secondary,
-.hero .actions .sl-link-button.minimal {
-  background: transparent;
-  color: var(--ad-gold);
-  border: 1px solid var(--ad-gold);
-  font-family: var(--ad-font-display);
-  font-size: 0.8rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.hero .actions .sl-link-button.secondary:hover,
-.hero .actions .sl-link-button.minimal:hover {
-  background: rgba(212, 175, 55, 0.10);
-  color: var(--ad-gold);
-}
-:root[data-theme='light'] .hero .actions .sl-link-button.primary {
-  background: var(--ad-cyan-deep);
-  color: #ffffff;
-  border-color: var(--ad-cyan-deep);
-}
-:root[data-theme='light'] .hero .actions .sl-link-button.secondary,
-:root[data-theme='light'] .hero .actions .sl-link-button.minimal {
-  color: var(--ad-burgundy-deep);
-  border-color: var(--ad-burgundy-deep);
-}
-:root[data-theme='light'] .hero .actions .sl-link-button.secondary:hover,
-:root[data-theme='light'] .hero .actions .sl-link-button.minimal:hover {
-  background: rgba(122, 31, 44, 0.06);
-  color: var(--ad-burgundy-deep);
-}
+  /* ------------------------------------------------------------
+     Version chip — outlined gold pill in the header
+     (Static look. HUD layers on glitch in hud.css.)
+     ------------------------------------------------------------ */
+  .ad-version-chip {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--sl-font-mono);
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    margin-left: 8px;
+    color: var(--ad-gold);
+    border: 1px solid var(--ad-gold);
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+    user-select: none;
+    cursor: default;
+    position: relative;
+  }
+  :root[data-theme='light'] .ad-version-chip {
+    color: var(--ad-gold-deep);
+    border-color: var(--ad-gold-deep);
+    background: rgba(138, 109, 31, 0.08);
+  }
 
-/* ------------------------------------------------------------
-   Search modal — branded frame + pagefind UI
-   (Starlight DOM: <site-search> → <dialog> → <div.dialog-frame>)
-   ------------------------------------------------------------ */
-site-search dialog {
-  background: var(--sl-color-bg);
-  border: 1px solid var(--sl-color-hairline);
-  border-radius: 12px;
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.55),
-              0 0 0 1px rgba(0, 217, 255, 0.04);
-  padding: 0;
-  color: var(--sl-color-text);
-  max-width: 720px;
-}
-site-search dialog::backdrop {
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
-}
-:root[data-theme='light'] site-search dialog::backdrop {
-  background: rgba(60, 50, 40, 0.45);
-}
-site-search dialog .dialog-frame {
-  background: var(--sl-color-bg);
-  border-radius: 12px;
-  padding: 0.5rem 0.75rem 0.75rem;
-}
-site-search dialog .dialog-frame > .header,
-site-search dialog .dialog-frame .header {
-  border-bottom: 1px solid var(--sl-color-hairline);
-  font-family: var(--ad-font-display);
-  font-size: 0.7rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--sl-color-gray-3);
-}
-site-search dialog .dialog-frame > p {
-  font-family: var(--sl-font);
-  color: var(--sl-color-gray-3);
-  text-align: center;
-  padding: 1.5rem 1rem;
-}
-.pagefind-ui {
-  --pagefind-ui-primary: var(--ad-cyan);
-  --pagefind-ui-text: var(--sl-color-text);
-  --pagefind-ui-background: var(--sl-color-bg);
-  --pagefind-ui-border: var(--sl-color-hairline);
-  --pagefind-ui-tag: var(--sl-color-bg-nav);
-  --pagefind-ui-font: var(--sl-font);
-}
-.pagefind-ui__form input.pagefind-ui__search-input {
-  background: var(--sl-color-bg-nav);
-  border: 1px solid var(--sl-color-hairline);
-  color: var(--sl-color-text);
-  font-family: var(--sl-font-mono);
-  border-radius: 6px;
-}
-.pagefind-ui__form input.pagefind-ui__search-input:focus {
-  border-color: var(--ad-cyan);
-  outline: none;
-}
-:root[data-theme='light'] .pagefind-ui__form input.pagefind-ui__search-input:focus {
-  border-color: var(--ad-cyan-deep);
-}
-.pagefind-ui__result-title,
-.pagefind-ui__result-title a {
-  font-family: var(--ad-font-display);
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
-  color: var(--sl-color-text);
-}
-.pagefind-ui__result-link:hover .pagefind-ui__result-title,
-.pagefind-ui__result-title a:hover {
-  color: var(--ad-cyan);
-}
-:root[data-theme='light'] .pagefind-ui__result-link:hover .pagefind-ui__result-title,
-:root[data-theme='light'] .pagefind-ui__result-title a:hover {
-  color: var(--ad-cyan-deep);
-}
-.pagefind-ui__result-excerpt mark {
-  background: rgba(212, 175, 55, 0.18);
-  color: var(--ad-gold);
-  padding: 0 3px;
-  border-radius: 3px;
-}
-:root[data-theme='light'] .pagefind-ui__result-excerpt mark {
-  background: rgba(138, 109, 31, 0.16);
-  color: var(--ad-gold-deep);
-}
+  /* ------------------------------------------------------------
+     "Built by Abstract Data" credit
+     Hidden when the plugin is configured with `credit: 'hide'`.
+     ------------------------------------------------------------ */
+  .ad-credit {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--sl-color-hairline-light);
+    font-family: var(--ad-font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-4);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .ad-credit a {
+    color: var(--ad-cyan);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .ad-credit a:hover { text-decoration: underline; }
+  :root[data-theme='light'] .ad-credit a { color: var(--ad-cyan-deep); }
 
-/* ------------------------------------------------------------
-   "On this page" right sidebar (TOC) — branded
-   ------------------------------------------------------------ */
-.right-sidebar h2,
-.right-sidebar-panel h2 {
-  font-family: var(--ad-font-display);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--sl-color-gray-3);
-}
-.right-sidebar a[aria-current='true'],
-starlight-toc a[aria-current='true'] {
-  color: var(--ad-cyan);
-  border-left: 2px solid var(--ad-cyan);
-  padding-left: 8px;
-  margin-left: -10px;
-}
-:root[data-theme='light'] .right-sidebar a[aria-current='true'],
-:root[data-theme='light'] starlight-toc a[aria-current='true'] {
-  color: var(--ad-cyan-deep);
-  border-left-color: var(--ad-cyan-deep);
+  /* ------------------------------------------------------------
+     <Glitch /> base — clean render under motion: 'calm'
+     HUD layers on the actual glitch animation in hud.css.
+     ------------------------------------------------------------ */
+  .ad-glitch {
+    position: relative;
+    display: inline-block;
+    font-family: var(--ad-font-display);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--ad-cyan);
+  }
+  :root[data-theme='light'] .ad-glitch {
+    color: var(--ad-burgundy);
+  }
+
+  /* ------------------------------------------------------------
+     Splash page hero — constrain logo width on wide screens
+     ------------------------------------------------------------ */
+  .hero .hero-html img,
+  .hero img[alt][src] {
+    max-width: 360px;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ------------------------------------------------------------
+     Hero action buttons — primary cyan, secondary gold ghost
+     (Starlight uses .sl-link-button.primary / .secondary inside .hero .actions)
+     ------------------------------------------------------------ */
+  .hero .actions .sl-link-button.primary {
+    background: var(--ad-cyan);
+    color: var(--ad-charcoal);
+    border: 1px solid var(--ad-cyan);
+    font-family: var(--ad-font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .hero .actions .sl-link-button.primary:hover {
+    box-shadow: 0 0 24px rgba(0, 217, 255, 0.5);
+  }
+  .hero .actions .sl-link-button.secondary,
+  .hero .actions .sl-link-button.minimal {
+    background: transparent;
+    color: var(--ad-gold);
+    border: 1px solid var(--ad-gold);
+    font-family: var(--ad-font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .hero .actions .sl-link-button.secondary:hover,
+  .hero .actions .sl-link-button.minimal:hover {
+    background: rgba(212, 175, 55, 0.10);
+    color: var(--ad-gold);
+  }
+  :root[data-theme='light'] .hero .actions .sl-link-button.primary {
+    background: var(--ad-cyan-deep);
+    color: #ffffff;
+    border-color: var(--ad-cyan-deep);
+  }
+  :root[data-theme='light'] .hero .actions .sl-link-button.secondary,
+  :root[data-theme='light'] .hero .actions .sl-link-button.minimal {
+    color: var(--ad-burgundy-deep);
+    border-color: var(--ad-burgundy-deep);
+  }
+  :root[data-theme='light'] .hero .actions .sl-link-button.secondary:hover,
+  :root[data-theme='light'] .hero .actions .sl-link-button.minimal:hover {
+    background: rgba(122, 31, 44, 0.06);
+    color: var(--ad-burgundy-deep);
+  }
+
+  /* ------------------------------------------------------------
+     Search modal — branded frame + pagefind UI
+     (Starlight DOM: <site-search> → <dialog> → <div.dialog-frame>)
+     ------------------------------------------------------------ */
+  site-search dialog {
+    background: var(--sl-color-bg);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 12px;
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.55),
+                0 0 0 1px rgba(0, 217, 255, 0.04);
+    padding: 0;
+    color: var(--sl-color-text);
+    max-width: 720px;
+  }
+  site-search dialog::backdrop {
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+  }
+  :root[data-theme='light'] site-search dialog::backdrop {
+    background: rgba(60, 50, 40, 0.45);
+  }
+  site-search dialog .dialog-frame {
+    background: var(--sl-color-bg);
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem 0.75rem;
+  }
+  site-search dialog .dialog-frame > .header,
+  site-search dialog .dialog-frame .header {
+    border-bottom: 1px solid var(--sl-color-hairline);
+    font-family: var(--ad-font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-3);
+  }
+  site-search dialog .dialog-frame > p {
+    font-family: var(--sl-font);
+    color: var(--sl-color-gray-3);
+    text-align: center;
+    padding: 1.5rem 1rem;
+  }
+  .pagefind-ui {
+    --pagefind-ui-primary: var(--ad-cyan);
+    --pagefind-ui-text: var(--sl-color-text);
+    --pagefind-ui-background: var(--sl-color-bg);
+    --pagefind-ui-border: var(--sl-color-hairline);
+    --pagefind-ui-tag: var(--sl-color-bg-nav);
+    --pagefind-ui-font: var(--sl-font);
+  }
+  .pagefind-ui__form input.pagefind-ui__search-input {
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-hairline);
+    color: var(--sl-color-text);
+    font-family: var(--sl-font-mono);
+    border-radius: 6px;
+  }
+  .pagefind-ui__form input.pagefind-ui__search-input:focus {
+    border-color: var(--ad-cyan);
+    outline: none;
+  }
+  :root[data-theme='light'] .pagefind-ui__form input.pagefind-ui__search-input:focus {
+    border-color: var(--ad-cyan-deep);
+  }
+  .pagefind-ui__result-title,
+  .pagefind-ui__result-title a {
+    font-family: var(--ad-font-display);
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    color: var(--sl-color-text);
+  }
+  .pagefind-ui__result-link:hover .pagefind-ui__result-title,
+  .pagefind-ui__result-title a:hover {
+    color: var(--ad-cyan);
+  }
+  :root[data-theme='light'] .pagefind-ui__result-link:hover .pagefind-ui__result-title,
+  :root[data-theme='light'] .pagefind-ui__result-title a:hover {
+    color: var(--ad-cyan-deep);
+  }
+  .pagefind-ui__result-excerpt mark {
+    background: rgba(212, 175, 55, 0.18);
+    color: var(--ad-gold);
+    padding: 0 3px;
+    border-radius: 3px;
+  }
+  :root[data-theme='light'] .pagefind-ui__result-excerpt mark {
+    background: rgba(138, 109, 31, 0.16);
+    color: var(--ad-gold-deep);
+  }
+
+  /* ------------------------------------------------------------
+     "On this page" right sidebar (TOC) — branded
+     ------------------------------------------------------------ */
+  .right-sidebar h2,
+  .right-sidebar-panel h2 {
+    font-family: var(--ad-font-display);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-3);
+  }
+  .right-sidebar a[aria-current='true'],
+  starlight-toc a[aria-current='true'] {
+    color: var(--ad-cyan);
+    border-left: 2px solid var(--ad-cyan);
+    padding-left: 8px;
+    margin-left: -10px;
+  }
+  :root[data-theme='light'] .right-sidebar a[aria-current='true'],
+  :root[data-theme='light'] starlight-toc a[aria-current='true'] {
+    color: var(--ad-cyan-deep);
+    border-left-color: var(--ad-cyan-deep);
+  }
 }

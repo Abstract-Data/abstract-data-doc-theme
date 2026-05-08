@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import abstractData from '@abstractdata/starlight-theme';
+import starlightLinksValidator from 'starlight-links-validator';
 
 // https://astro.build/config
 export default defineConfig({
@@ -28,6 +29,16 @@ export default defineConfig({
         },
       ],
 
+      // ⬇️ Show "Last updated" timestamps on every page (read from git).
+      //    Requires the repo to be a git checkout at build time.
+      lastUpdated: true,
+
+      // ⬇️ Show an "Edit page" link in the footer of every doc.
+      //    Uncomment and replace once your repo URL is final.
+      // editLink: {
+      //   baseUrl: 'https://github.com/your-org/your-repo/edit/main/',
+      // },
+
       // ⬇️ Customize your sidebar.
       sidebar: [
         {
@@ -48,6 +59,10 @@ export default defineConfig({
           // Optional version chip in the header. Omit to hide.
           // version: 'v1.0.0',
         }),
+        // Fails the build on broken internal links — run on every PR.
+        // Set `errorOnFallbackPages: false` if you only build a subset
+        // of locales in dev.
+        starlightLinksValidator(),
       ],
     }),
   ],
