@@ -16,8 +16,8 @@
     "sync-skills": "node scripts/compile-skill.mjs",
     "smoke-test": "node scripts/smoke-test.mjs"
   },
-  "packageManager": "bun@1.1.34",
+  "packageManager": "bun@1.1.45",
   "engines": {
-    "bun": ">=1.1.0"
+    "bun": ">=1.1.45"
   }
 }
