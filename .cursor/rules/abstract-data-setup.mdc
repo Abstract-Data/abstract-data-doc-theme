@@ -232,6 +232,18 @@ Per enabled generator, ask: "Generate now? [Yes / No]"
 
 Pass through any tool-not-installed errors verbatim.
 
+### Phase 11.5 — Offer docs-author dispatch (if generators ran)
+
+After generation, scan `src/content/docs/api/` for **thin pages** — auto-generated files whose body (after frontmatter and the auto-rendered H1) is fewer than ~200 bytes, OR pages that consist of just signatures with no descriptive prose. These are the "what the heck is this?" pages — the source's docstrings are too sparse for the mechanical autodoc to produce useful output.
+
+If any thin pages are found, surface this to the user:
+
+> "I noticed N of the generated API pages are sparse — your source's docstrings are thin. The companion skill `abstract-data-docs-author` reads the source code itself and writes narrative prose to enrich those pages (module overview, usage example from tests, related-modules cross-references). Want me to invoke it now?"
+
+If yes: hand off to the `abstract-data-docs-author` skill (Claude Code: load the skill at `.claude/skills/abstract-data-docs-author/SKILL.md`; Cursor: refer to `.cursor/rules/abstract-data-docs-author.mdc`). Pass along the project profile and detected stack info so the docs-author skill doesn't have to re-discover.
+
+If no thin pages found, skip this phase silently. Don't push the docs-author skill on a project that doesn't need it.
+
 ### Phase 12 — Optional pre-commit hook (Python only)
 
 Only fires if Phase 4a found Python modules below 80% coverage. Offer to install an `interrogate` pre-commit hook in the source repo.

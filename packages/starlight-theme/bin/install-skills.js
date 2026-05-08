@@ -111,8 +111,23 @@ const MAPPINGS = [
     from: 'cursor/welcome.mdc',
     to: '.cursor/rules/welcome.mdc',
   },
+  // abstract-data-docs-author skill — read source code, write narrative docs
   {
-    label: 'GitHub Copilot instructions',
+    label: 'Claude Code docs-author skill',
+    detect: () =>
+      existsSync(resolve(PROJECT_ROOT, '.claude')) ||
+      existsSync(resolve(PROJECT_ROOT, 'CLAUDE.md')),
+    from: 'claude/abstract-data-docs-author/SKILL.md',
+    to: '.claude/skills/abstract-data-docs-author/SKILL.md',
+  },
+  {
+    label: 'Cursor docs-author rule',
+    detect: () => existsSync(resolve(PROJECT_ROOT, '.cursor')),
+    from: 'cursor/abstract-data-docs-author.mdc',
+    to: '.cursor/rules/abstract-data-docs-author.mdc',
+  },
+  {
+    label: 'GitHub Copilot instructions (covers both skills)',
     detect: () => existsSync(resolve(PROJECT_ROOT, '.github')),
     from: 'github/copilot-instructions.md',
     to: '.github/copilot-instructions.md',
