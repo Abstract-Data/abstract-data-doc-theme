@@ -4,6 +4,14 @@ All notable changes to `@abstractdata/starlight-theme` are documented here. The 
 
 This file is maintained by [release-please](https://github.com/googleapis/release-please) going forward — do not hand-edit beyond bootstrapping.
 
+## [0.3.3](https://github.com/Abstract-Data/abstract-data-doc-theme/compare/starlight-theme-v0.3.2...starlight-theme-v0.3.3) (2026-05-08)
+
+
+### Features
+
+* **docs:** add source-driven versioned API reference docs ([#17](https://github.com/Abstract-Data/abstract-data-doc-theme/issues/17)) ([76312f0](https://github.com/Abstract-Data/abstract-data-doc-theme/commit/76312f0ff8f9478538e231ed18d5fac70b835361))
+* **theme:** add wrapper and link validator dep ([#15](https://github.com/Abstract-Data/abstract-data-doc-theme/issues/15)) ([e72bf01](https://github.com/Abstract-Data/abstract-data-doc-theme/commit/e72bf01683bf9bd10419ba41c22d5a9ccf11a4e6))
+
 ## 0.4.0 (2026-05-07)
 
 A theming + DX release focused on the rough edges that show up after consumers ship a real client docs site. No breaking API changes; user CSS keeps working but now wins more cleanly.
