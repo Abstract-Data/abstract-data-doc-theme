@@ -1,0 +1,71 @@
+name: Deploy playground (demo) to GitHub Pages
+
+# Builds apps/playground and deploys it to GitHub Pages so the theme has a
+# live demo URL anyone can link to from npm or the README. To enable:
+#
+#   1. Repo Settings → Pages → Build and deployment → Source: GitHub Actions
+#   2. Push to main, or trigger manually from the Actions tab
+#
+# Result: https://abstract-data.github.io/abstract-data-doc-theme/
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/playground/**'
+      - 'packages/starlight-theme/**'
+      - '.github/workflows/deploy-playground.yml'
+      - 'bun.lock'
+      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between
+# in-progress and pending. Don't cancel in-progress runs to let them finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build playground
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build playground
+        working-directory: apps/playground
+        run: bun run build
+        env:
+          # GitHub Pages serves under /<repo>/, so set the base path
+          BASE_URL: /abstract-data-doc-theme
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/playground/dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

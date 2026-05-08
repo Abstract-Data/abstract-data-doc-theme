@@ -18,8 +18,10 @@ import { stdin, stdout, exit, argv, cwd } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 
 // ─── Theme version this CLI scaffolds against ─────────────────────────
-// Bump in lockstep with @abstractdata/starlight-theme major/minor releases.
-const THEME_VERSION = '^0.3.0';
+// Auto-updated by `scripts/sync-theme-version.mjs` during the prepack
+// step — DO NOT hand-edit. Reflects the version in
+// `packages/starlight-theme/package.json` at publish time.
+const THEME_VERSION = '^0.3.2';
 
 // ─── Paths ────────────────────────────────────────────────────────────
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -133,14 +135,15 @@ log(`  ${c.dim}$${c.reset} cd ${projectName}`);
 log(`  ${c.dim}$${c.reset} bun install`);
 log(`  ${c.dim}$${c.reset} bun dev`);
 log('');
-log(`${c.cyan}Tip:${c.reset} ${c.dim}open your AI coding assistant in ${projectName}/ and say${c.reset}`);
-log(`     ${c.dim}"set up docs" — the bundled${c.reset} ${c.gold}abstract-data-setup${c.reset} ${c.dim}workflow${c.reset}`);
-log(`     ${c.dim}wires up Python autodoc, sidebar, and plugin config${c.reset}`);
-log(`     ${c.dim}in one conversation.${c.reset}`);
+log(`${c.cyan}Tip:${c.reset} ${c.dim}open your AI coding assistant in ${projectName}/ — it will${c.reset}`);
+log(`     ${c.gold}offer to run the abstract-data-setup workflow automatically${c.reset}`);
+log(`     ${c.dim}on the first message. No magic phrase needed; just open${c.reset}`);
+log(`     ${c.dim}Claude Code, Cursor, or whatever you use, and the AI will${c.reset}`);
+log(`     ${c.dim}greet you and ask.${c.reset}`);
 log('');
-log(`     ${c.dim}Installed for: Claude Code (.claude/skills/), Cursor (.cursor/rules/),${c.reset}`);
-log(`     ${c.dim}and GitHub Copilot (.github/copilot-instructions.md). Delete the${c.reset}`);
-log(`     ${c.dim}folders for tools you don't use.${c.reset}`);
+log(`     ${c.dim}Installed for: Claude Code (CLAUDE.md + .claude/skills/),${c.reset}`);
+log(`     ${c.dim}Cursor (.cursor/rules/), GitHub Copilot (.github/${c.reset}`);
+log(`     ${c.dim}copilot-instructions.md). Delete what you don't use.${c.reset}`);
 log('');
 log(`${c.dim}Docs · https://github.com/Abstract-Data/abstract-data-doc-theme${c.reset}`);
 log('');

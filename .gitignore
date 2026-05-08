@@ -6,8 +6,7 @@ dist/
 .astro/
 .output/
 
-# bun
-bun.lock
+# bun — bun.lock IS committed (text-based lockfile, needed for reproducible installs)
 .bun/
 
 # logs

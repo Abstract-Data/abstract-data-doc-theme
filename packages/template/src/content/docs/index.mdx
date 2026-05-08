@@ -1,60 +1,81 @@
 ---
-title: Welcome
-description: Replace this with your project's elevator pitch.
+title: Your Project Docs
+description: Replace this with your project's elevator pitch — one sentence that tells visitors what you do.
 template: splash
 hero:
-  tagline: Branded documentation by Abstract Data. Replace this tagline with your own.
+  tagline: One-sentence tagline. Drop your hook here. The skill will offer to update this on first interaction.
   actions:
     - text: Get Started
       link: /quickstart/
       icon: right-arrow
       variant: primary
-    - text: GitHub
+    - text: View Source
       link: https://github.com/your-org/your-repo
       icon: external
       variant: secondary
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Glitch from '@abstractdata/starlight-theme/components/Glitch.astro';
 
-{/*
-  This is your landing page. Edit `hero.tagline` above and the cards below.
+## <Glitch text="WHAT'S INSIDE" />
 
-  To use the branded `<Hero />` with an optimized logo image, replace the
-  frontmatter `hero:` block with the snippet at the bottom of this file.
-*/}
+Four cards is a starting point — replace, reorder, add more. Each `Card` accepts a `title`, an `icon` (any [Lucide icon](https://lucide.dev) name), and Markdown body content.
 
 <CardGrid>
   <Card title="Quickstart" icon="rocket">
-    Get up and running in minutes. [Read the quickstart →](/quickstart/)
+    The five-minute install + first deploy walkthrough. [Read it →](/quickstart/)
   </Card>
-  <Card title="Replace these cards" icon="pencil">
-    Edit `src/content/docs/index.mdx` to make this your own.
+  <Card title="API Reference" icon="open-book">
+    Auto-generated from your source's docstrings (Python today; TypeScript and OpenAPI coming). Run `bun run docs:python`.
   </Card>
-  <Card title="Sidebar" icon="list-format">
-    Configure the sidebar in `astro.config.mjs`.
+  <Card title="Brand toggle" icon="setting">
+    Two motion modes: `full` (HUD) for marketing-y docs, `calm` for prose-heavy client docs. Light + dark in both. Configure in `astro.config.mjs`.
   </Card>
-  <Card title="Brand" icon="setting">
-    Toggle `motion: 'calm' | 'full'` and `credit: 'auto' | 'hide'` in the plugin config.
+  <Card title="Branded components" icon="puzzle">
+    `<Glitch>`, `<Hero>`, branded callouts, and a Shiki theme that paints code in cyan / gold / burgundy. Import from `@abstractdata/starlight-theme/components/*`.
   </Card>
 </CardGrid>
 
-{/*
-  ──────────────────────────────────────────────────────────────────────
-  Optional: branded <Hero /> with an optimized logo image.
-  Drop a logo in `src/assets/`, then replace the `hero:` frontmatter
-  above with `template: splash` only, and use this in the body:
+## Make it yours
 
-      import { Image } from 'astro:assets';
-      import logo from '../../assets/your-logo.png';
-      import Hero from '@abstractdata/starlight-theme/components/Hero.astro';
+Open Claude Code (or Cursor) in this folder — it'll greet you and offer to wire up Python autodoc, your sidebar, and your plugin config in one conversation. Or do it manually:
 
-      <Hero
-        title="Your title"
-        tagline="Your tagline"
-        image={logo}
-        primary={{ text: 'Get Started', href: '/quickstart/' }}
-        secondary={{ text: 'GitHub', href: 'https://github.com/your-org/your-repo' }}
-      />
-  ──────────────────────────────────────────────────────────────────────
-*/}
+<CardGrid>
+  <LinkCard
+    title="Edit astro.config.mjs"
+    description="Set your project title, sidebar structure, social links, and which motion mode the brand runs in."
+    href="/quickstart/#configure"
+  />
+  <LinkCard
+    title="Drop your logo"
+    description="Place it in src/assets/, then point logo.src in astro.config.mjs at it."
+    href="/quickstart/#logo"
+  />
+  <LinkCard
+    title="Write content"
+    description="Markdown and MDX in src/content/docs/. Sub-folders become sidebar groups."
+    href="/quickstart/#content"
+  />
+  <LinkCard
+    title="Deploy"
+    description="GitHub Pages workflow is preconfigured. Vercel and Cloudflare workflow variants ship alongside."
+    href="/quickstart/#deploy"
+  />
+</CardGrid>
+
+## Branded callouts
+
+The four standard Starlight callouts (`note`, `tip`, `caution`, `danger`) are styled with the brand palette — colored left border, matching glow in HUD mode, branded label typography.
+
+:::tip[Pro tip]
+Use `:::caution` for footguns, `:::danger` for destructive operations, `:::note` for context, `:::tip` for opinion. Your readers will thank you.
+:::
+
+:::caution[Heads up]
+Update the placeholder values in `astro.config.mjs` (title, site URL, social links) before deploying. The skill's first-interaction handshake catches these — open your AI assistant if you'd like it to do the rewrite for you.
+:::
+
+---
+
+> Replace this whole page once your real content lands. The `template: splash` frontmatter is what gives this hero its layout; switch to `template: doc` (or remove the line) on inner pages so they get a sidebar and table of contents.

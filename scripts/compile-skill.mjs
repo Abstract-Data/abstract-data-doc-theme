@@ -186,6 +186,44 @@ function compileCopilot(fm, body) {
   ].join('\n');
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// Static mirrors — hand-authored handshake files that are NOT compiled
+// from SKILL.md but DO need to ship inside the theme package's skills/
+// directory so install-skills can copy them into consumer projects.
+// ──────────────────────────────────────────────────────────────────────
+const STATIC_MIRRORS = [
+  // Handshake files — Claude Code + Cursor first-interaction primers
+  {
+    label: 'CLAUDE.md (theme pkg)',
+    src: join(REPO_ROOT, 'packages/template/CLAUDE.md'),
+    dest: join(REPO_ROOT, 'packages/starlight-theme/skills/claude/CLAUDE.md'),
+  },
+  {
+    label: 'welcome.mdc (theme pkg)',
+    src: join(REPO_ROOT, 'packages/template/.cursor/rules/welcome.mdc'),
+    dest: join(REPO_ROOT, 'packages/starlight-theme/skills/cursor/welcome.mdc'),
+  },
+  // Python autodoc orchestrator (source-of-truth lives in the playground —
+  // it's the file that gets exercised against real Python projects).
+  // Mirror it into BOTH the template (so create-docs scaffolds get it)
+  // AND the theme package (so install-skills can install it for migration users).
+  {
+    label: 'build-python-docs.mjs (template)',
+    src: join(REPO_ROOT, 'apps/playground/scripts/build-python-docs.mjs'),
+    dest: join(REPO_ROOT, 'packages/template/scripts/build-python-docs.mjs'),
+  },
+  {
+    label: 'build-python-docs.mjs (theme pkg)',
+    src: join(REPO_ROOT, 'apps/playground/scripts/build-python-docs.mjs'),
+    dest: join(REPO_ROOT, 'packages/starlight-theme/scripts/build-python-docs.mjs'),
+  },
+  {
+    label: 'python-autodoc.json (theme pkg)',
+    src: join(REPO_ROOT, 'packages/template/scripts/python-autodoc.json'),
+    dest: join(REPO_ROOT, 'packages/starlight-theme/scripts/python-autodoc.json'),
+  },
+];
+
 // Write all targets
 console.log('');
 let count = 0;
@@ -212,9 +250,28 @@ for (const t of TARGETS) {
   count += 1;
 }
 
+// Static mirrors (hand-authored handshake files copied verbatim)
+for (const m of STATIC_MIRRORS) {
+  if (!existsSync(m.src)) {
+    console.log(
+      `${c.dim}—${c.reset} ${m.label.padEnd(22)} ${c.dim}skipped (source missing: ${m.src})${c.reset}`,
+    );
+    continue;
+  }
+  mkdirSync(dirname(m.dest), { recursive: true });
+  const content = readFileSync(m.src, 'utf8');
+  writeFileSync(m.dest, content);
+  const rel = m.dest.replace(REPO_ROOT + '/', '');
+  console.log(
+    `${c.green}✓${c.reset} ${m.label.padEnd(22)} ${c.dim}→ ${rel}${c.reset}`,
+  );
+  count += 1;
+}
+
 console.log('');
 console.log(
   `${c.gold}Compiled${c.reset} ${count} files from ` +
-    `${c.cyan}.claude/skills/abstract-data-setup/SKILL.md${c.reset}`,
+    `${c.cyan}.claude/skills/abstract-data-setup/SKILL.md${c.reset}` +
+    ` ${c.dim}(+ static handshake mirrors)${c.reset}`,
 );
 console.log('');
