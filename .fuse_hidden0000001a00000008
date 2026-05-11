@@ -9,14 +9,14 @@ The branded docs system Abstract Data uses across client projects. Built on [Ast
 This is a Bun-workspaces monorepo:
 
 - `packages/starlight-theme/` — the published `@abstractdata/starlight-theme` npm package.
-- `packages/create-docs/` — the published `@abstractdata/create-docs` CLI scaffolder. Powers `bun create @abstractdata/docs <name>`.
+- `packages/create-docs/` — the published `@abstract-data/create-docs` CLI scaffolder. Powers `bun create @abstract-data/docs <name>`.
 - `packages/template/` — the source-of-truth template that the CLI scaffolds from. Also usable directly as a GitHub "Use this template" starting point.
 - `apps/playground/` — local Starlight site that consumes the package end-to-end (this is what `bun dev` runs).
 
 ## For consumers — start a new project
 
 ```bash
-bun create @abstractdata/docs my-docs
+bun create @abstract-data/docs my-docs
 cd my-docs
 bun install
 bun dev

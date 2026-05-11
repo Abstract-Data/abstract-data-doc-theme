@@ -7,7 +7,7 @@
 A Bun-workspaces monorepo containing the Abstract Data Starlight documentation theme, the CLI scaffolder, and the template client projects are scaffolded from.
 
 - `packages/starlight-theme/` — the `@abstractdata/starlight-theme` npm package. **This is the primary deliverable.**
-- `packages/create-docs/` — the `@abstractdata/create-docs` CLI scaffolder (`bun create @abstractdata/docs`).
+- `packages/create-docs/` — the `@abstract-data/create-docs` CLI scaffolder (`bun create @abstract-data/docs`).
 - `packages/template/` — the template `create-docs` bundles and scaffolds from.
 - `apps/playground/` — private dev site, never published. Consumes the theme via `workspace:*`.
 - `docs/round-2-mockup.html` — archived static HTML mockup. Visual reference — don't delete.
@@ -51,7 +51,7 @@ Lockfile is `bun.lock` (text-based). Commit it.
 - ✅ **Round 3c:** branded Shiki/expressive-code themes (cyan/gold/burgundy), custom `<Hero>` component using Astro's `<Image>`, gold ghost button polish, light-mode hex visibility bumped, branded TOC right sidebar, `packages/template/` template package with GitHub Pages workflow.
 - ✅ **Round 3.5 (QA):** branded `404.astro` with Glitch headline, search modal styling (`site-search dialog` + `::backdrop`), expanded `prefers-reduced-motion` block, mobile/light/calm walkthrough confirmed.
 - ✅ **Round 4:** self-hosted variable fonts via `@fontsource-variable/*` (no Google Fonts CDN), Vercel + Cloudflare Pages workflow variants in template, kitchen-sink showcase page, migration guide for existing Starlight users, `mockup.html` archived to `docs/`.
-- ✅ **Round 5:** `bun create @abstractdata/docs` CLI scaffolder (`packages/create-docs/`), Python + TypeScript autodoc pipelines (`scripts/build-python-docs.mjs` / `build-ts-docs.mjs`), `<VersionPicker>` component for versioned API reference, `abstract-data-setup` skill with full Python + TS detection and config-write workflow, multi-tool skill compilation (Cursor MDC + Copilot), release-please automation.
+- ✅ **Round 5:** `bun create @abstract-data/docs` CLI scaffolder (`packages/create-docs/`), Python + TypeScript autodoc pipelines (`scripts/build-python-docs.mjs` / `build-ts-docs.mjs`), `<VersionPicker>` component for versioned API reference, `abstract-data-setup` skill with full Python + TS detection and config-write workflow, multi-tool skill compilation (Cursor MDC + Copilot), release-please automation.
 
 ## Non-obvious gotchas — read before adding features
 
@@ -102,7 +102,7 @@ The skill ships in three formats so it works in Claude Code, Cursor, and GitHub 
 | `.cursor/rules/abstract-data-setup.mdc` | Cursor MDC, full procedural workflow | description-based agent invocation |
 | `.github/copilot-instructions.md` | static markdown reference | applied globally to every Copilot Chat |
 
-Each format also exists under `packages/template/` so scaffolded projects from `bun create @abstractdata/docs` ship all three out of the box.
+Each format also exists under `packages/template/` so scaffolded projects from `bun create @abstract-data/docs` ship all three out of the box.
 
 ### Editing rules
 
@@ -122,7 +122,7 @@ node scripts/compile-skill.mjs
 
 ### Publish flow
 
-`@abstractdata/create-docs`'s `prepack` script now runs `node ../../scripts/compile-skill.mjs` before copying `packages/template/` into the bundled `template/`. That means every npm publish ships fresh adapter files compiled from the current source-of-truth SKILL.md.
+`@abstract-data/create-docs`'s `prepack` script now runs `node ../../scripts/compile-skill.mjs` before copying `packages/template/` into the bundled `template/`. That means every npm publish ships fresh adapter files compiled from the current source-of-truth SKILL.md.
 
 ### Future skills
 

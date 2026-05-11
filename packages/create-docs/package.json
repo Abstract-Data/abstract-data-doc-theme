@@ -1,17 +1,7 @@
 {
-<<<<<<< ours
-  "name": "@abstract-data/create-docs",
-  "version": "0.2.1",
-  "description": "Scaffold a new branded documentation site using @abstractdata/starlight-theme.",
-||||||| ancestor
-  "name": "@abstractdata/create-docs",
-  "version": "0.2.1",
-  "description": "Scaffold a new branded documentation site using @abstractdata/starlight-theme. Run with `bun create @abstractdata/docs <name>`.",
-=======
   "name": "@abstractdata/create-docs",
   "version": "0.2.2",
   "description": "Scaffold a new branded documentation site using @abstractdata/starlight-theme. Run with `bun create @abstractdata/docs <name>`.",
->>>>>>> theirs
   "type": "module",
   "bin": {
     "create-abstractdata-docs": "./bin/cli.js"

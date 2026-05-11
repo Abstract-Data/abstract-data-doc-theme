@@ -60,7 +60,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-create-docs:
-    name: Publish @abstractdata/create-docs to npm
+    name: Publish @abstract-data/create-docs to npm
     needs: release-please
     if: ${{ needs.release-please.outputs.create_docs_released == 'true' }}
     runs-on: ubuntu-latest

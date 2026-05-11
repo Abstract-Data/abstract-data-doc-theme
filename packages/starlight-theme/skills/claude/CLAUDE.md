@@ -43,4 +43,4 @@ The full setup workflow lives at `.claude/skills/abstract-data-setup/SKILL.md`. 
 
 - Source repo: https://github.com/Abstract-Data/abstract-data-doc-theme
 - Theme on npm: https://www.npmjs.com/package/@abstractdata/starlight-theme
-- Scaffolder on npm: https://www.npmjs.com/package/@abstract-data/create-docs
+- Scaffolder on npm: https://www.npmjs.com/package/@abstractdata/create-docs

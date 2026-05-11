@@ -1,13 +1,7 @@
 ---
-description: "Set up the Abstract Data Documentation Theme (built on Astro Starlight) for a project. Detect source code across stacks (Python, TypeScript, Next.js, TanStack, OpenAPI, Prisma, Drizzle), audit docstring coverage for Python, sniff docstring style (Google/NumPy/Sphinx), detect or pick a logo asset, ask configuration questions (modules/entry points, motion, credit, version), wire up config files (scripts/python-autodoc.json, scripts/ts-autodoc.json, astro.config.mjs sidebar + plugin options, package.json scripts), and optionally install a docstring-coverage pre-commit hook. Use when the user says \"set up docs\", \"configure docs\", \"wire up Python autodoc\", \"wire up TypeScript autodoc\", \"scan my project for docs\", \"set up Abstract Data docs\", \"add API reference\", \"audit docstrings\", or similar phrases inside a docs project that uses @abstractdata/starlight-theme (the npm package name; product is the Abstract Data Documentation Theme)."
-alwaysApply: false
+name: abstract-data-setup
+description: Set up the Abstract Data Documentation Theme (built on Astro Starlight) for a project. Detect source code across stacks (Python, TypeScript, Next.js, TanStack, OpenAPI, Prisma, Drizzle), audit docstring coverage for Python, sniff docstring style (Google/NumPy/Sphinx), detect or pick a logo asset, ask configuration questions (modules/entry points, motion, credit, version), wire up config files (scripts/python-autodoc.json, scripts/ts-autodoc.json, astro.config.mjs sidebar + plugin options, package.json scripts), and optionally install a docstring-coverage pre-commit hook. Use when the user says "set up docs", "configure docs", "wire up Python autodoc", "wire up TypeScript autodoc", "scan my project for docs", "set up Abstract Data docs", "add API reference", "audit docstrings", or similar phrases inside a docs project that uses @abstractdata/starlight-theme (the npm package name; product is the Abstract Data Documentation Theme).
 ---
-
-<!--
-  Auto-generated from .claude/skills/abstract-data-setup/SKILL.md.
-  Edit the source SKILL.md and run `bun run sync-skills` to regenerate.
-  Do not hand-edit this file — changes will be overwritten.
--->
 
 # Abstract Data Documentation Theme — Setup
 
@@ -15,7 +9,7 @@ Bootstrap the Abstract Data Documentation Theme — the branded docs system Abst
 
 ## When to invoke
 
-Run this skill when the user says "set up docs", "configure docs", "wire up Python autodoc", "wire up TypeScript autodoc", "scan my project for docs", "audit docstrings", or similar inside a project that has `@abstractdata/starlight-theme` in its `package.json`. If the cwd doesn't have that dep, stop and point them at `bun create @abstractdata/docs`.
+Run this skill when the user says "set up docs", "configure docs", "wire up Python autodoc", "wire up TypeScript autodoc", "scan my project for docs", "audit docstrings", or similar inside a project that has `@abstractdata/starlight-theme` in its `package.json`. If the cwd doesn't have that dep, stop and point them at `bun create @abstract-data/docs`.
 
 ## Workflow
 
@@ -515,7 +509,7 @@ The template ships with `starlight-links-validator` already installed and regist
 
 If any of those three pieces are missing, surface the gap and offer to add it. The plugin's failure mode is "fail the build on any broken internal link" — exactly what you want for CI.
 
-For migrating projects (running `bunx abstract-data-install-skills` rather than scaffolding via `bun create @abstractdata/docs`), the plugin will not be installed automatically. Tell the user:
+For migrating projects (running `bunx abstract-data-install-skills` rather than scaffolding via `bun create @abstract-data/docs`), the plugin will not be installed automatically. Tell the user:
 
 ```bash
 bun add starlight-links-validator
