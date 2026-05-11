@@ -4,6 +4,13 @@ All notable changes to `@abstractdata/create-docs` are documented here. The form
 
 This file is maintained by [release-please](https://github.com/googleapis/release-please) going forward — do not hand-edit beyond bootstrapping.
 
+## [0.2.4](https://github.com/Abstract-Data/abstract-data-doc-theme/compare/create-docs-v0.2.3...create-docs-v0.2.4) (2026-05-11)
+
+
+### Bug Fixes
+
+* revert theme to0.3.4 to resolve ([#23](https://github.com/Abstract-Data/abstract-data-doc-theme/issues/23)) ([69b4806](https://github.com/Abstract-Data/abstract-data-doc-theme/commit/69b48066380d01cfb987a7f5b90c3ecbf97f4a20))
+
 ## [0.2.3](https://github.com/Abstract-Data/abstract-data-doc-theme/compare/create-docs-v0.2.2...create-docs-v0.2.3) (2026-05-11)
 
 
