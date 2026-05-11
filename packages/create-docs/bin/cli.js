@@ -159,8 +159,16 @@ try {
     cwd: targetDir,
     stdio: 'ignore',
   });
-} catch {
+} catch (err) {
   // Non-fatal — user can `git init` manually.
+  const isNotFound =
+    err?.code === 'ENOENT' ||
+    /not found|no such file|command not found/i.test(err?.message ?? '');
+  if (isNotFound) {
+    log(`${c.dim}  (git not found in PATH — run ${c.reset}${c.bold}git init${c.reset}${c.dim} inside ${c.reset}${c.bold}${projectName}/${c.reset}${c.dim} to start version-tracking your project)${c.reset}`);
+  } else {
+    log(`${c.dim}  (git skipped: ${(err?.message ?? 'unknown error').split('\n')[0]} — run git init manually)${c.reset}`);
+  }
 }
 
 // ─── Done ─────────────────────────────────────────────────────────────

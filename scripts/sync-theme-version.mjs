@@ -72,6 +72,20 @@ const updated = cli.replace(
 
 writeFileSync(CLI_FILE, updated);
 
+// ─── Verify write ─────────────────────────────────────────────────────
+// Read back the file to confirm the regex replacement landed correctly.
+// Catches edge cases like filesystem write failures or a second THEME_VERSION
+// declaration shadowing the first.
+const readBack = readFileSync(CLI_FILE, 'utf8');
+const readBackMatch = readBack.match(/^const THEME_VERSION = '(\^?[\d.]+)';/m);
+if (!readBackMatch || readBackMatch[1] !== wantedRange) {
+  die(
+    `Post-write verification failed: expected THEME_VERSION = '${wantedRange}' ` +
+    `but found '${readBackMatch?.[1] ?? '<no match>'}' in ${CLI_FILE}.\n` +
+    `  The file may have been written incorrectly — inspect it before publishing.`,
+  );
+}
+
 console.log(
   `${c.green}✓${c.reset} ${c.dim}Synced${c.reset} ${c.cyan}THEME_VERSION${c.reset}: ${beforeMatch[1]} ${c.dim}→${c.reset} ${c.gold}${wantedRange}${c.reset}`,
 );

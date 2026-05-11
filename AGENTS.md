@@ -4,11 +4,13 @@
 
 ## What this repo is
 
-A Bun-workspaces monorepo containing the Abstract Data Starlight documentation theme, a local playground that consumes it, and (eventually) a GitHub template repo for client project scaffolding.
+A Bun-workspaces monorepo containing the Abstract Data Starlight documentation theme, the CLI scaffolder, and the template client projects are scaffolded from.
 
-- `packages/starlight-theme/` — the `@abstractdata/starlight-theme` npm package. **This is the deliverable.**
+- `packages/starlight-theme/` — the `@abstractdata/starlight-theme` npm package. **This is the primary deliverable.**
+- `packages/create-docs/` — the `@abstractdata/create-docs` CLI scaffolder (`bun create @abstractdata/docs`).
+- `packages/template/` — the template `create-docs` bundles and scaffolds from.
 - `apps/playground/` — private dev site, never published. Consumes the theme via `workspace:*`.
-- `mockup.html` — round-two static HTML mockup. Source of truth for visual decisions until Round 3 lands. Don't delete.
+- `docs/round-2-mockup.html` — archived static HTML mockup. Visual reference — don't delete.
 
 ## Package manager
 
@@ -49,7 +51,7 @@ Lockfile is `bun.lock` (text-based). Commit it.
 - ✅ **Round 3c:** branded Shiki/expressive-code themes (cyan/gold/burgundy), custom `<Hero>` component using Astro's `<Image>`, gold ghost button polish, light-mode hex visibility bumped, branded TOC right sidebar, `packages/template/` template package with GitHub Pages workflow.
 - ✅ **Round 3.5 (QA):** branded `404.astro` with Glitch headline, search modal styling (`site-search dialog` + `::backdrop`), expanded `prefers-reduced-motion` block, mobile/light/calm walkthrough confirmed.
 - ✅ **Round 4:** self-hosted variable fonts via `@fontsource-variable/*` (no Google Fonts CDN), Vercel + Cloudflare Pages workflow variants in template, kitchen-sink showcase page, migration guide for existing Starlight users, `mockup.html` archived to `docs/`.
-- ⏳ **Future:** `bun create @abstractdata/docs` CLI scaffolder (separate `create-abstractdata-docs` package).
+- ✅ **Round 5:** `bun create @abstractdata/docs` CLI scaffolder (`packages/create-docs/`), Python + TypeScript autodoc pipelines (`scripts/build-python-docs.mjs` / `build-ts-docs.mjs`), `<VersionPicker>` component for versioned API reference, `abstract-data-setup` skill with full Python + TS detection and config-write workflow, multi-tool skill compilation (Cursor MDC + Copilot), release-please automation.
 
 ## Non-obvious gotchas — read before adding features
 
@@ -78,13 +80,15 @@ Releases are automated via [release-please](https://github.com/googleapis/releas
 
 This repo ships a Claude Code skill at `.claude/skills/abstract-data-setup/SKILL.md` — when invoked inside a project that depends on `@abstractdata/starlight-theme`, it walks the user through:
 
-1. **Detection** — Python signals via `pyproject.toml`, source tree shape, package + submodule discovery.
-2. **Docstring coverage audit** — runs `interrogate` (or AST walk fallback) on candidate modules, classifies as green/yellow/red, surfaces gaps before they become empty API pages.
-3. **Docstring style detection** — Google / NumPy / Sphinx sniffer; warns on mixed style.
-4. **Interactive questions** — modules to document, motion / credit / version.
-5. **Config writes** — `scripts/python-autodoc.json`, `astro.config.mjs` sidebar + plugin call, `package.json` `docs:python` script.
-6. **Optional generation** — runs `bun run docs:python` on consent.
-7. **Optional pre-commit hook** — if any module is below 80% coverage, offers to install an `interrogate` hook in the *source* project's `.pre-commit-config.yaml` plus dev deps. Edits the source repo, not the docs repo.
+1. **Stack detection** — Python (`pyproject.toml`, source tree), TypeScript (entry points, `package.json` exports), Next.js, TanStack Router, OpenAPI, Prisma, Drizzle, and logo assets.
+2. **Python docstring audit** — runs `interrogate` (or AST walk fallback), classifies green/yellow/red per module.
+3. **Python style detection** — Google / NumPy / Sphinx sniffer; warns on mixed style.
+4. **TypeScript TSDoc audit** — runs TypeDoc in validation-only mode to count undocumented exports, same traffic-light thresholds as Python.
+5. **Interactive questions** — modules/entry points to document, motion / credit / version, logo, last-updated timestamps, Edit-on-GitHub link.
+6. **Config writes** — `scripts/python-autodoc.json`, `scripts/ts-autodoc.json`, `astro.config.mjs` sidebar + plugin call, `package.json` `docs:python` / `docs:ts` scripts.
+7. **Optional generation** — runs `bun run docs:python` / `bun run docs:ts` on consent.
+8. **Thin-page dispatch** — detects sparse auto-generated pages and offers to hand off to the `abstract-data-docs-author` companion skill.
+9. **Optional pre-commit hook** — per-stack: `interrogate` for Python, TypeDoc validation for TypeScript. Edits the *source* repo, not the docs repo.
 
 **Source of truth:** `.claude/skills/abstract-data-setup/SKILL.md` at the monorepo root. Everything else is generated from it.
 
@@ -122,7 +126,7 @@ node scripts/compile-skill.mjs
 
 ### Future skills
 
-TypeScript autodoc, OpenAPI, Next.js detection, etc. should follow the same pattern: hand-author a `SKILL.md`, let the compiler emit Cursor and Copilot variants. Add new entries to the `TARGETS` array in `scripts/compile-skill.mjs`.
+OpenAPI, Next.js route-map, Prisma schema-doc, Drizzle schema-doc, and `abstract-data-docs-author` (prose enrichment) should follow the same pattern when implemented: hand-author a `SKILL.md`, let the compiler emit Cursor and Copilot variants. Add new entries to the `TARGETS` array in `scripts/compile-skill.mjs`.
 
 ## Loop closure
 
