@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 /**
- * @abstract-data/create-docs
+ * @abstractdata/create-docs
  *
  * Scaffold a new branded Starlight documentation project from the
  * @abstractdata/docs template. Invoked as:
  *
- *   bun create @abstract-data/docs <project-name>
- *   npm create @abstract-data/docs@latest <project-name>
- *   pnpm create @abstract-data/docs <project-name>
+ *   bun create @abstractdata/docs <project-name>
+ *   npm create @abstractdata/docs@latest <project-name>
+ *   pnpm create @abstractdata/docs <project-name>
  */
 import { existsSync, mkdirSync, readdirSync, copyFileSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { join, resolve, dirname, basename } from 'node:path';
@@ -48,7 +48,7 @@ log(`${c.cyan}└─────────────────────
 log('');
 
 if (!TEMPLATE_DIR) {
-  die('Could not locate template directory. This usually means @abstract-data/create-docs was packaged incorrectly. Reinstall the package or file an issue.');
+  die('Could not locate template directory. This usually means @abstractdata/create-docs was packaged incorrectly. Reinstall the package or file an issue.');
 }
 
 // ─── Resolve project name ─────────────────────────────────────────────
@@ -155,7 +155,7 @@ log(`${c.dim}→ initializing git${c.reset}`);
 try {
   execSync('git init -q', { cwd: targetDir, stdio: 'ignore' });
   execSync('git add -A', { cwd: targetDir, stdio: 'ignore' });
-  execSync('git -c user.name=create-docs -c user.email=cli@abstractdata.io commit -q -m "chore: initial scaffold from @abstract-data/create-docs"', {
+  execSync('git -c user.name=create-docs -c user.email=cli@abstractdata.io commit -q -m "chore: initial scaffold from @abstractdata/create-docs"', {
     cwd: targetDir,
     stdio: 'ignore',
   });

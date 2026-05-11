@@ -23,7 +23,7 @@ Run this skill when:
 - The `abstract-data-setup` skill has just finished generating mechanical autodoc pages that read as terse/empty.
 - The user has run `bun run docs:python` (or `docs:ts`) and asks "now make these readable."
 
-If the cwd doesn't have `@abstractdata/starlight-theme` in `package.json` deps, stop and point the user at `bun create @abstractdata/docs`. If `src/content/docs/api/` doesn't exist or is empty, run the setup skill first (or tell the user to).
+If the cwd doesn't have `@abstractdata/starlight-theme` in `package.json` deps, stop and point the user at `bun create @abstract-data/docs`. If `src/content/docs/api/` doesn't exist or is empty, run the setup skill first (or tell the user to).
 
 ## Operating principles
 

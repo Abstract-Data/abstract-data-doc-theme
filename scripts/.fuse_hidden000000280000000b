@@ -5,7 +5,7 @@
  * Reads `packages/starlight-theme/package.json` and updates the
  * `THEME_VERSION` constant inside `packages/create-docs/bin/cli.js` to
  * match. Run by the create-docs `prepack` script so every published
- * version of `@abstract-data/create-docs` scaffolds projects pinned to
+ * version of `@abstractdata/create-docs` scaffolds projects pinned to
  * the latest theme version.
  *
  * Removes the manual-bump-in-two-places footgun.

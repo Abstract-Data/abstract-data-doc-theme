@@ -4,10 +4,10 @@ Starter Starlight documentation site with the [`@abstractdata/starlight-theme`](
 
 ## Use this template
 
-**The fastest path** — use the `@abstract-data/create-docs` CLI:
+**The fastest path** — use the `@abstractdata/create-docs` CLI:
 
 ```bash
-bun create @abstract-data/docs my-docs
+bun create @abstractdata/docs my-docs
 cd my-docs
 bun install
 bun dev

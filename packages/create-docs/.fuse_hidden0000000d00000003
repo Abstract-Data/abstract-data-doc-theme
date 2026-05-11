@@ -1,14 +1,14 @@
-# @abstract-data/create-docs
+# @abstractdata/create-docs
 
 One-command scaffolder for new Abstract Data documentation sites.
 
 ## Usage
 
 ```bash
-bun create @abstract-data/docs my-docs
+bun create @abstractdata/docs my-docs
 ```
 
-(Or `npm create @abstract-data/docs@latest my-docs`, or `pnpm create @abstract-data/docs my-docs`.)
+(Or `npm create @abstractdata/docs@latest my-docs`, or `pnpm create @abstractdata/docs my-docs`.)
 
 That creates a `./my-docs/` folder with a fresh Starlight project pre-wired to `@abstractdata/starlight-theme`. Then:
 
@@ -29,7 +29,7 @@ After that, edit `astro.config.mjs` to replace the placeholder `site`, `social`,
 
 ## Options
 
-For now, `bun create @abstract-data/docs <name>` is the only invocation. Configuration (motion mode, credit, version chip) is set inside the generated `astro.config.mjs` after scaffolding — easier to discover than CLI flags.
+For now, `bun create @abstractdata/docs <name>` is the only invocation. Configuration (motion mode, credit, version chip) is set inside the generated `astro.config.mjs` after scaffolding — easier to discover than CLI flags.
 
 ## Maintenance note
 

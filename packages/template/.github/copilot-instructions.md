@@ -34,7 +34,7 @@ Bootstrap the Abstract Data Documentation Theme — the branded docs system Abst
 
 ## When to invoke
 
-Run this skill when the user says "set up docs", "configure docs", "wire up Python autodoc", "wire up TypeScript autodoc", "scan my project for docs", "audit docstrings", or similar inside a project that has `@abstractdata/starlight-theme` in its `package.json`. If the cwd doesn't have that dep, stop and point them at `bun create @abstractdata/docs`.
+Run this skill when the user says "set up docs", "configure docs", "wire up Python autodoc", "wire up TypeScript autodoc", "scan my project for docs", "audit docstrings", or similar inside a project that has `@abstractdata/starlight-theme` in its `package.json`. If the cwd doesn't have that dep, stop and point them at `bun create @abstract-data/docs`.
 
 ## Workflow
 
@@ -534,7 +534,7 @@ The template ships with `starlight-links-validator` already installed and regist
 
 If any of those three pieces are missing, surface the gap and offer to add it. The plugin's failure mode is "fail the build on any broken internal link" — exactly what you want for CI.
 
-For migrating projects (running `bunx abstract-data-install-skills` rather than scaffolding via `bun create @abstractdata/docs`), the plugin will not be installed automatically. Tell the user:
+For migrating projects (running `bunx abstract-data-install-skills` rather than scaffolding via `bun create @abstract-data/docs`), the plugin will not be installed automatically. Tell the user:
 
 ```bash
 bun add starlight-links-validator
@@ -603,7 +603,7 @@ Run this skill when:
 - The `abstract-data-setup` skill has just finished generating mechanical autodoc pages that read as terse/empty.
 - The user has run `bun run docs:python` (or `docs:ts`) and asks "now make these readable."
 
-If the cwd doesn't have `@abstractdata/starlight-theme` in `package.json` deps, stop and point the user at `bun create @abstractdata/docs`. If `src/content/docs/api/` doesn't exist or is empty, run the setup skill first (or tell the user to).
+If the cwd doesn't have `@abstractdata/starlight-theme` in `package.json` deps, stop and point the user at `bun create @abstract-data/docs`. If `src/content/docs/api/` doesn't exist or is empty, run the setup skill first (or tell the user to).
 
 ## Operating principles
 
