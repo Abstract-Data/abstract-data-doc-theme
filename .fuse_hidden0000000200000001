@@ -29,7 +29,7 @@
       ]
     },
     "packages/create-docs": {
-      "package-name": "@abstractdata/create-docs",
+      "package-name": "@abstract-data/create-docs",
       "component": "create-docs",
       "changelog-path": "CHANGELOG.md"
     }

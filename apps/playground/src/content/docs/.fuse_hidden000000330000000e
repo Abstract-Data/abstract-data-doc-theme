@@ -295,7 +295,7 @@ bun run preview
 ### Terminal frame
 
 ```bash frame="terminal"
-$ bun create @abstractdata/docs my-project
+$ bun create @abstract-data/docs my-project
 ┌─[ ABSTRACT DATA · DOCS ]─────────────────┐
 │ Scaffolding a branded Starlight site      │
 └──────────────────────────────────────────┘
