@@ -126,6 +126,16 @@ if (!propVersions || propVersions.length === 0) {
     // No `docs` collection or no version frontmatter — render nothing.
     versions = [];
   }
+
+  // Warn at build time so developers know why the picker is absent.
+  // Fires only in auto-discovery mode (no `versions` prop passed).
+  if (versions.length === 0) {
+    console.warn(
+      '[VersionPicker] Auto-discovery found no pages with `version:` frontmatter. ' +
+      'The picker will not render until at least one page has `version: "<tag>"` in its frontmatter. ' +
+      'See the versioned-docs recipe or pass a `versions` prop manually to suppress this warning.',
+    );
+  }
 }
 
 // ─── Detect current version from URL ──────────────────────────────────

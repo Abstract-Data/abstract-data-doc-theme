@@ -3,7 +3,7 @@ title: Kitchen Sink
 description: Every component, callout, code language, and styling primitive the theme ships, in one page. Doubles as visual regression bait.
 ---
 
-import { Card, CardGrid, LinkCard, Tabs, TabItem, Steps, Aside } from '@astrojs/starlight/components';
+import { Badge, Card, CardGrid, FileTree, Icon, LinkButton, LinkCard, Tabs, TabItem, Steps, Aside } from '@astrojs/starlight/components';
 import Glitch from '@abstractdata/starlight-theme/components/Glitch.astro';
 
 Every component, callout, code language, and styling primitive the theme ships — visible at once. Use this page to spot regressions after any visual change.
@@ -255,6 +255,120 @@ def apply(config: ThemeConfig) -> None:
   description="Already running Starlight? Drop the theme in without losing your existing setup."
   href="/migrating/"
 />
+
+## Expressive code features
+
+These meta-features are part of Astro's expressive-code integration and are worth verifying in both dark and light modes.
+
+### File title + line highlight
+
+```ts title="src/plugin/index.ts" {3,7-9}
+import type { StarlightPlugin } from '@astrojs/starlight/types';
+
+export interface Config {
+  motion: 'full' | 'calm';
+  credit: 'auto' | 'hide';
+  version?: string;
+}
+
+export default function plugin(opts: Config): StarlightPlugin {
+  return { name: '@abstractdata/starlight-theme', hooks: {} };
+}
+```
+
+### Diff markers
+
+```ts del={2} ins={3}
+const motion = opts.motion ?? 'full';
+const motion = opts.motion ?? 'calm';
+```
+
+### Line numbers
+
+```bash showLineNumbers
+bun install
+bun dev
+bun run build
+bun run preview
+```
+
+### Terminal frame
+
+```bash frame="terminal"
+$ bun create @abstractdata/docs my-project
+┌─[ ABSTRACT DATA · DOCS ]─────────────────┐
+│ Scaffolding a branded Starlight site      │
+└──────────────────────────────────────────┘
+
+✓ my-project scaffolded.
+```
+
+### Code + title together
+
+```json title="scripts/ts-autodoc.json"
+{
+  "entryPoints": ["../../my-lib/src/index.ts"],
+  "tsconfig": "../../my-lib/tsconfig.json",
+  "outputDir": "src/content/docs/api/ts"
+}
+```
+
+## Badge
+
+All five variants Starlight ships:
+
+<Badge text="New" variant="tip" />
+<Badge text="Caution" variant="caution" />
+<Badge text="Danger" variant="danger" />
+<Badge text="Note" variant="note" />
+<Badge text="Success" variant="success" />
+
+Badges inline with a heading:
+
+### Feature <Badge text="Beta" variant="caution" /> <Badge text="v0.4+" variant="tip" />
+
+## FileTree
+
+```
+<FileTree>
+```
+
+<FileTree>
+- packages/
+  - starlight-theme/
+    - src/
+      - components/
+        - Footer.astro
+        - Glitch.astro
+        - Hero.astro
+        - SocialIcons.astro
+        - **VersionPicker.astro** New in v0.4
+      - styles/
+        - theme.css
+        - hud.css
+      - index.ts The plugin entry
+  - create-docs/
+    - bin/
+      - cli.js
+- apps/
+  - playground/
+</FileTree>
+
+## Icon
+
+A sample of Starlight's built-in icon set (Heroicons + Phosphor subset):
+
+<Icon name="rocket" /> <Icon name="star" /> <Icon name="approve-check" /> <Icon name="warning" /> <Icon name="information" /> <Icon name="github" /> <Icon name="external" />
+
+Icon sizes:
+
+<Icon name="rocket" size="1rem" /> <Icon name="rocket" size="1.5rem" /> <Icon name="rocket" size="2rem" />
+
+## LinkButton
+
+<LinkButton href="/quickstart/">Get started</LinkButton>
+<LinkButton href="/quickstart/" variant="secondary">Read the docs</LinkButton>
+<LinkButton href="https://github.com/Abstract-Data/abstract-data-doc-theme" variant="minimal" icon="github" target="_blank">View on GitHub</LinkButton>
 
 ## Blockquote
 
