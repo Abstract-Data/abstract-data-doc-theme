@@ -1,4 +1,12 @@
 {
+<<<<<<< ours
+  "packages/starlight-theme": "0.3.4",
+  "packages/create-docs": "0.2.3"
+||||||| ancestor
+  "packages/starlight-theme": "0.3.4",
+  "packages/create-docs": "0.2.2"
+=======
   "packages/starlight-theme": "0.3.5",
   "packages/create-docs": "0.2.3"
+>>>>>>> theirs
 }
