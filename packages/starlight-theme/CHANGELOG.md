@@ -4,6 +4,13 @@ All notable changes to `@abstractdata/starlight-theme` are documented here. The 
 
 This file is maintained by [release-please](https://github.com/googleapis/release-please) going forward — do not hand-edit beyond bootstrapping.
 
+## [0.3.4](https://github.com/Abstract-Data/abstract-data-doc-theme/compare/starlight-theme-v0.3.3...starlight-theme-v0.3.4) (2026-05-11)
+
+
+### Bug Fixes
+
+* **versioning:** cleanup versioning abilities. ([#18](https://github.com/Abstract-Data/abstract-data-doc-theme/issues/18)) ([ca27b20](https://github.com/Abstract-Data/abstract-data-doc-theme/commit/ca27b20fca5eb24a1f0933f474d5b08049d279da))
+
 ## [0.3.3](https://github.com/Abstract-Data/abstract-data-doc-theme/compare/starlight-theme-v0.3.2...starlight-theme-v0.3.3) (2026-05-08)
 
 
